@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farid Library</title>
+<style>
+  :root {
+    --bg: #0F1117;
+    --bg2: #181B25;
+    --bg3: #1E2231;
+    --border: #2A2F45;
+    --amber: #F5A623;
+    --amber2: #FFB94A;
+    --amber-dim: rgba(245,166,35,0.12);
+    --cream: #EEE8D5;
+    --muted: #7A8099;
+    --danger: #E05050;
+    --success: #4CAF7C;
+    --card-r: 14px;
+    --font-head: Georgia, 'Times New Roman', serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--cream);
+    font-family: var(--font-ui); min-height: 100dvh;
+    overflow-x: hidden; -webkit-font-smoothing: antialiased;
+  }
+  #app { display: flex; flex-direction: column; min-height: 100dvh; }
+
+  /* Top Bar */
+  .top-bar {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 14px 20px; display: flex; align-items: center;
+    justify-content: space-between; position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    font-family: var(--font-head); font-size: 20px; color: var(--amber);
+    letter-spacing: .03em; display: flex; align-items: center; gap: 8px;
+  }
+  .logo svg { width: 22px; height: 22px; }
+  .notif-btn {
+    background: var(--amber-dim); border: 1px solid rgba(245,166,35,.3);
+    color: var(--amber); width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; position: relative;
+  }
+  .notif-badge {
+    position: absolute; top: -2px; right: -2px; width: 8px; height: 8px;
+    background: var(--danger); border-radius: 50%;
+  }
+
+  /* Bottom Nav */
+  main { flex: 1; overflow-y: auto; padding-bottom: 80px; }
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--bg2); border-top: 1px solid var(--border);
+    display: flex; z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .tab-btn {
+    flex: 1; padding: 12px 0 10px; background: none; border: none;
+    color: var(--muted); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-size: 11px; font-family: var(--font-ui); transition: color .2s;
+    position: relative;
+  }
+  .tab-btn svg { width: 20px; height: 20px; }
+  .tab-btn.active { color: var(--amber); }
+  .tab-btn.active::before {
+    content: ''; position: absolute; top: 0; left: 25%; right: 25%;
+    height: 2px; background: var(--amber); border-radius: 0 0 4px 4px;
+  }
+
+  /* Panels */
+  .panel { display: none; padding: 20px; animation: fadeIn .22s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
+
+  .section-label {
+    font-size: 11px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 14px; margin-top: 24px;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  /* Stats */
+  .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--card-r); padding: 14px 12px; text-align: center;
+  }
+  .stat-card .val { font-family: var(--font-head); font-size: 26px; color: var(--amber); line-height: 1; }
+  .stat-card .lbl { font-size: 10px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .08em; }
+
+  /* Daily bar */
+  .daily-bar-wrap {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--card-r); padding: 16px 18px; margin-bottom: 24px;
+  }
+  .daily-bar-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .daily-bar-head span { font-size: 13px; color: var(--cream); }
+  .daily-bar-head .pct { font-size: 13px; color: var(--amber); font-weight: 700; }
+  .bar-track { background: var(--bg3); border-radius: 99px; height: 8px; overflow: hidden; }
+  .bar-fill { height: 100%; background: linear-gradient(90deg,var(--amber),var(--amber2)); border-radius: 99px; transition: width .6s ease; }
+  .daily-note { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+  /* Book cards */
+  .books-grid { display: flex; flex-direction: column; gap: 12px; }
+  .book-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--card-r); padding: 16px;
+    display: flex; gap: 14px; cursor: pointer;
+    transition: border-color .2s, transform .15s;
+    position: relative; overflow: hidden;
+  }
+  .book-card::after {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--amber); border-radius: 3px 0 0 3px;
+    transform: scaleY(0); transform-origin: bottom; transition: transform .3s ease;
+  }
+  .book-card:hover { border-color: rgba(245,166,35,.4); transform: translateY(-1px); }
+  .book-card:hover::after { transform: scaleY(1); }
+  .book-cover {
+    width: 54px; min-width: 54px; height: 74px; background: var(--bg3);
+    border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border); overflow: hidden;
+  }
+  .book-cover .initials { font-family: var(--font-head); font-size: 18px; color: var(--amber); font-weight: bold; }
+  .book-meta { flex: 1; min-width: 0; }
+  .book-title { font-family: var(--font-head); font-size: 15px; color: var(--cream); font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .book-author { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .book-desc { font-size: 12px; color: var(--muted); margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .book-progress-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .mini-bar { flex: 1; background: var(--bg3); border-radius: 99px; height: 4px; }
+  .mini-fill { height: 100%; background: var(--amber); border-radius: 99px; }
+  .book-pct { font-size: 11px; color: var(--amber); font-weight: 700; min-width: 28px; text-align: right; }
+  .book-time { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+  /* Empty */
+  .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty .icon { font-size: 52px; margin-bottom: 14px; opacity: .5; }
+  .empty p { font-size: 14px; }
+  .empty .hint { font-size: 12px; margin-top: 8px; opacity: .7; }
+
+  /* Form */
+  .form-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--card-r); padding: 20px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .07em; }
+  .field input, .field textarea {
+    width: 100%; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--cream); font-family: var(--font-ui);
+    font-size: 14px; padding: 10px 12px; outline: none; transition: border-color .2s;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--amber); }
+  .field textarea { min-height: 80px; resize: vertical; }
+
+  .pdf-drop {
+    border: 2px dashed var(--border); border-radius: 10px;
+    padding: 28px 20px; text-align: center; cursor: pointer;
+    transition: border-color .2s, background .2s;
+    color: var(--muted); font-size: 13px;
+  }
+  .pdf-drop:hover, .pdf-drop.over { border-color: var(--amber); background: var(--amber-dim); color: var(--amber); }
+  .pdf-chosen { font-size: 12px; color: var(--success); margin-top: 8px; word-break: break-all; display: none; }
+
+  /* Success banner */
+  .success-banner {
+    background: rgba(76,175,124,.15); border: 1px solid rgba(76,175,124,.4);
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 20px;
+    display: none; align-items: center; gap: 10px;
+    animation: fadeIn .3s ease;
+  }
+  .success-banner.show { display: flex; }
+  .success-banner .s-icon { font-size: 22px; }
+  .success-banner .s-text { font-size: 13px; color: var(--success); font-weight: 600; }
+  .success-banner .s-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 11px 22px; border-radius: 8px; font-size: 14px; font-weight: 600;
+    cursor: pointer; border: none; transition: opacity .2s, transform .1s;
+    font-family: var(--font-ui);
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--amber); color: #0F1117; }
+  .btn-primary:hover { opacity: .9; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { opacity: .9; }
+  .btn-ghost { background: var(--bg3); color: var(--cream); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--amber); color: var(--amber); }
+  .btn-full { width: 100%; }
+
+  /* Edit list */
+  .edit-book-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--card-r); padding: 16px;
+    display: flex; align-items: center; gap: 14px; margin-bottom: 10px;
+    transition: border-color .2s;
+  }
+  .edit-book-card .info { flex: 1; min-width: 0; }
+  .edit-book-card .etitle { font-size: 14px; font-family: var(--font-head); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .edit-book-card .eauthor { font-size: 12px; color: var(--muted); }
+  .edit-book-card .arr { color: var(--muted); font-size: 18px; cursor: pointer; }
+  .edit-book-card:hover { border-color: rgba(245,166,35,.3); }
+
+  /* Modal */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,.78);
+    z-index: 500; display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-bg.open { display: flex; animation: fadeIn .2s ease; }
+  .modal {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 16px; width: 100%; max-width: 400px; padding: 24px;
+    position: relative; animation: slideUp .25s ease; max-height: 90vh; overflow-y: auto;
+  }
+  @keyframes slideUp { from { transform: translateY(20px); opacity:0; } to { transform:none; opacity:1; } }
+  .modal-title { font-family: var(--font-head); font-size: 18px; margin-bottom: 4px; }
+  .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .modal-close {
+    position: absolute; top: 14px; right: 14px;
+    background: var(--bg3); border: none; color: var(--muted);
+    width: 28px; height: 28px; border-radius: 50%;
+    cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { color: var(--cream); }
+  .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-btns .btn { flex: 1; }
+
+  /* PIN */
+  .pin-row { display: flex; gap: 10px; justify-content: center; margin: 16px 0; }
+  .pin-dot {
+    width: 44px; height: 52px; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: bold; color: var(--amber); transition: border-color .2s;
+  }
+  .pin-dot.filled { border-color: var(--amber); }
+  .pin-keypad { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 4px; }
+  .pin-key {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px; text-align: center; font-size: 18px; cursor: pointer;
+    color: var(--cream); transition: background .15s, color .15s; user-select: none;
+  }
+  .pin-key:hover { background: var(--amber-dim); color: var(--amber); border-color: var(--amber); }
+  .pin-key.invisible { visibility: hidden; cursor: default; }
+  .pin-error { text-align: center; color: var(--danger); font-size: 13px; margin-top: 8px; min-height: 18px; }
+
+  /* Reader */
+  #reader-overlay {
+    position: fixed; inset: 0; z-index: 900; background: var(--bg);
+    display: none; flex-direction: column;
+  }
+  #reader-overlay.open { display: flex; }
+  .reader-topbar {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+  }
+  .back-btn {
+    background: var(--bg3); border: 1px solid var(--border); color: var(--cream);
+    padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;
+    display: flex; align-items: center; gap: 4px; white-space: nowrap;
+    font-family: var(--font-ui);
+  }
+  .back-btn:hover { border-color: var(--amber); color: var(--amber); }
+  .reader-title { font-family: var(--font-head); font-size: 15px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .reader-time-badge {
+    background: var(--amber-dim); border: 1px solid rgba(245,166,35,.3);
+    color: var(--amber); font-size: 12px; font-weight: 700;
+    padding: 4px 10px; border-radius: 99px; white-space: nowrap;
+  }
+  .reader-body { flex: 1; overflow: hidden; position: relative; }
+  #pdf-container {
+    width: 100%; height: 100%; overflow-y: auto; background: #2a2a2a;
+    display: flex; flex-direction: column; align-items: center; gap: 0; padding: 0;
+  }
+  #pdf-container canvas { max-width: 100%; display: block; }
+  .reader-bottombar {
+    background: var(--bg2); border-top: 1px solid var(--border);
+    padding: 10px 16px; display: flex; align-items: center; gap: 12px;
+    flex-shrink: 0; padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+  .page-nav { display: flex; align-items: center; gap: 8px; }
+  .page-nav button {
+    background: var(--bg3); border: 1px solid var(--border); color: var(--cream);
+    width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .page-nav button:hover { border-color: var(--amber); color: var(--amber); }
+  .page-info { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .reader-progress { flex: 1; }
+  .reader-progress .bar-track { height: 6px; }
+
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 94px; left: 50%; transform: translateX(-50%);
+    background: #1E2231; border: 1px solid #2A2F45;
+    color: var(--cream); padding: 11px 22px; border-radius: 99px;
+    font-size: 13px; z-index: 9999; pointer-events: none;
+    opacity: 0; transition: opacity .3s; white-space: nowrap; max-width: 90vw;
+  }
+  #toast.show { opacity: 1; }
+
+  /* Activity */
+  .activity-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--border);
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--amber-dim); border: 1px solid rgba(245,166,35,.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .activity-text { flex: 1; }
+  .activity-text .a-title { font-size: 13px; color: var(--cream); }
+  .activity-text .a-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .activity-time { font-size: 11px; color: var(--muted); }
+
+  .spinner {
+    width: 36px; height: 36px; border: 3px solid var(--border);
+    border-top-color: var(--amber); border-radius: 50%;
+    animation: spin .8s linear infinite; margin: 60px auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top-bar">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+      </svg>
+      Farid Library
+    </div>
+    <button class="notif-btn" onclick="requestNotifPerms()" title="Enable Reminders">
+      🔔
+      <span class="notif-badge" id="notif-badge"></span>
+    </button>
+  </div>
+
+  <main id="main">
+    <!-- HOME -->
+    <div class="panel active" id="panel-home">
+      <div class="section-label">Today's Progress</div>
+      <div class="daily-bar-wrap">
+        <div class="daily-bar-head">
+          <span>Daily Goal · 20 min</span>
+          <span class="pct" id="daily-pct">0%</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" id="daily-bar" style="width:0%"></div></div>
+        <div class="daily-note" id="daily-note">Start reading to track your progress today.</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="val" id="stat-books">0</div><div class="lbl">Books</div></div>
+        <div class="stat-card"><div class="val" id="stat-mins">0</div><div class="lbl">Min Today</div></div>
+        <div class="stat-card"><div class="val" id="stat-streak">0</div><div class="lbl">Day Streak</div></div>
+      </div>
+      <div class="section-label">Your Books</div>
+      <div class="books-grid" id="home-books"></div>
+      <div class="section-label" id="act-label" style="display:none">Recent Activity</div>
+      <div id="activity-list"></div>
+    </div>
+
+    <!-- ADD -->
+    <div class="panel" id="panel-add">
+      <div id="add-success" class="success-banner">
+        <div class="s-icon">✅</div>
+        <div><div class="s-text" id="add-success-text">Book saved!</div><div class="s-sub">Find it on your Home tab.</div></div>
+      </div>
+      <div class="section-label" style="margin-top:0">Add New Book</div>
+      <div class="form-card">
+        <div class="field">
+          <label>Book Title *</label>
+          <input type="text" id="add-title" placeholder="e.g. Atomic Habits">
+        </div>
+        <div class="field">
+          <label>Author / Writer</label>
+          <input type="text" id="add-author" placeholder="e.g. James Clear">
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea id="add-desc" placeholder="Brief summary or notes about this book..."></textarea>
+        </div>
+        <div class="field">
+          <label>PDF File *</label>
+          <div class="pdf-drop" id="pdf-drop" onclick="document.getElementById('pdf-input').click()">
+            <div style="font-size:32px;margin-bottom:8px">📄</div>
+            <div>Tap to select PDF</div>
+            <div style="font-size:11px;margin-top:4px;opacity:.6">or drag &amp; drop here</div>
+          </div>
+          <div class="pdf-chosen" id="pdf-chosen"></div>
+          <input type="file" id="pdf-input" accept=".pdf,application/pdf" style="display:none" onchange="handlePDFSelect(this)">
+        </div>
+        <button class="btn btn-primary btn-full" onclick="addBook()" id="add-btn">
+          ➕ Save Book to Library
+        </button>
+      </div>
+
+      <div class="section-label">Library (Tap to Delete)</div>
+      <div id="add-panel-list"></div>
+    </div>
+
+    <!-- EDIT -->
+    <div class="panel" id="panel-edit">
+      <div class="section-label">Select a book to edit</div>
+      <div id="edit-panel-list"></div>
+    </div>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="tab-btn active" id="tab-home" onclick="switchTab('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      Home
+    </button>
+    <button class="tab-btn" id="tab-add" onclick="switchTab('add')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="16"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+      </svg>
+      Add
+    </button>
+    <button class="tab-btn" id="tab-edit" onclick="switchTab('edit')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      Edit
+    </button>
+  </nav>
+</div>
+
+<!-- Reader -->
+<div id="reader-overlay">
+  <div class="reader-topbar">
+    <button class="back-btn" onclick="closeReader()">← Back</button>
+    <div class="reader-title" id="reader-title"></div>
+    <div class="reader-time-badge" id="reader-time">0:00</div>
+  </div>
+  <div class="reader-body">
+    <div id="pdf-container"><div class="spinner"></div></div>
+  </div>
+  <div class="reader-bottombar">
+    <div class="page-nav">
+      <button onclick="prevPage()">‹</button>
+      <span class="page-info" id="page-info">1 / 1</span>
+      <button onclick="nextPage()">›</button>
+    </div>
+    <div class="reader-progress">
+      <div class="bar-track"><div class="bar-fill" id="reader-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// ─── Config ───────────────────────────────────────
+const CORRECT_PIN = '5578';
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ─── State ────────────────────────────────────────
+let books = [];
+let activity = [];
+let todayMins = 0;
+let streak = 0;
+let selectedPDFData = null;
+let selectedPDFName = '';
+let currentBookId = null;
+let pdfDoc = null;
+let currentPage = 1;
+let totalPages = 1;
+let readerTimer = null;
+let readerSeconds = 0;
+let notifInterval = null;
+let reminderSent = false;
+let pinEntry = '';
+let pinTarget = { type: '', bookId: '' };
+
+// ─── Storage ──────────────────────────────────────
+function save() {
+  try {
+    localStorage.setItem('fl_books', JSON.stringify(books));
+    localStorage.setItem('fl_activity', JSON.stringify(activity.slice(0, 50)));
+    const stored = JSON.parse(localStorage.getItem('fl_daily') || '{}');
+    stored[dateKey()] = todayMins;
+    localStorage.setItem('fl_daily', JSON.stringify(stored));
+    localStorage.setItem('fl_streak', streak);
+  } catch(e) { console.warn('Save error', e); }
+}
+
+function load() {
+  try {
+    books = JSON.parse(localStorage.getItem('fl_books') || '[]');
+    activity = JSON.parse(localStorage.getItem('fl_activity') || '[]');
+    const stored = JSON.parse(localStorage.getItem('fl_daily') || '{}');
+    todayMins = stored[dateKey()] || 0;
+    streak = parseInt(localStorage.getItem('fl_streak') || '0');
+    calcStreak();
+  } catch(e) { books=[]; activity=[]; }
+}
+
+function dateKey() { return new Date().toISOString().slice(0, 10); }
+
+function calcStreak() {
+  const stored = JSON.parse(localStorage.getItem('fl_daily') || '{}');
+  let s = 0, d = new Date();
+  for (let i = 0; i < 365; i++) {
+    const k = d.toISOString().slice(0, 10);
+    if ((stored[k] || 0) >= 20) { s++; d.setDate(d.getDate() - 1); }
+    else if (i === 0) { d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  streak = s;
+}
+
+// ─── Tabs ─────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'home') renderHome();
+  if (name === 'add') renderAddList();
+  if (name === 'edit') renderEditList();
+}
+
+// ─── Helpers ──────────────────────────────────────
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function timeStr(d) {
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+function addActivity(icon, title, sub) {
+  activity.unshift({ icon, title, sub, time: timeStr(new Date()) });
+  if (activity.length > 50) activity.pop();
+}
+
+// ─── Toast ────────────────────────────────────────
+let toastTimer = null;
+function toast(msg, duration) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), duration || 3000);
+}
+
+// ─── Home Render ──────────────────────────────────
+function renderHome() {
+  const pct = Math.min(100, Math.round((todayMins / 20) * 100));
+  document.getElementById('daily-pct').textContent = pct + '%';
+  document.getElementById('daily-bar').style.width = pct + '%';
+  document.getElementById('stat-books').textContent = books.length;
+  document.getElementById('stat-mins').textContent = Math.round(todayMins);
+  document.getElementById('stat-streak').textContent = streak;
+  document.getElementById('daily-note').textContent = todayMins >= 20
+    ? `🎉 Goal complete! You've read ${Math.round(todayMins)} min today.`
+    : `${Math.round(20 - todayMins)} min left to reach your daily goal.`;
+
+  const grid = document.getElementById('home-books');
+  if (!books.length) {
+    grid.innerHTML = `<div class="empty"><div class="icon">📚</div><p>No books yet</p><div class="hint">Tap the + tab to add your first book</div></div>`;
+  } else {
+    grid.innerHTML = books.map(bookCardHTML).join('');
+  }
+
+  const actLabel = document.getElementById('act-label');
+  const actList = document.getElementById('activity-list');
+  if (activity.length) {
+    actLabel.style.display = '';
+    actList.innerHTML = activity.slice(0, 8).map(a => `
+      <div class="activity-item">
+        <div class="activity-icon">${a.icon}</div>
+        <div class="activity-text"><div class="a-title">${esc(a.title)}</div><div class="a-sub">${esc(a.sub)}</div></div>
+        <div class="activity-time">${a.time}</div>
+      </div>`).join('');
+  } else {
+    actLabel.style.display = 'none';
+    actList.innerHTML = '';
+  }
+}
+
+function bookCardHTML(b) {
+  const pct = b.totalPages > 0 ? Math.round((b.currentPage / b.totalPages) * 100) : 0;
+  const readMins = Math.round((b.totalReadSecs || 0) / 60);
+  const initials = (b.title || '?').slice(0, 2).toUpperCase();
+  return `<div class="book-card" onclick="openBook('${b.id}')">
+    <div class="book-cover"><div class="initials">${initials}</div></div>
+    <div class="book-meta">
+      <div class="book-title">${esc(b.title)}</div>
+      <div class="book-author">${esc(b.author) || '—'}</div>
+      <div class="book-desc">${esc(b.desc) || 'No description.'}</div>
+      <div class="book-progress-row">
+        <div class="mini-bar"><div class="mini-fill" style="width:${pct}%"></div></div>
+        <div class="book-pct">${pct}%</div>
+      </div>
+      <div class="book-time">📖 Page ${b.currentPage || 1} of ${b.totalPages || '?'} · ${readMins} min total</div>
+    </div>
+  </div>`;
+}
+
+// ─── PDF Select ───────────────────────────────────
+function handlePDFSelect(inp) {
+  const f = inp.files[0];
+  if (!f) return;
+  if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
+    toast('Please select a valid PDF file'); return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    selectedPDFData = e.target.result;
+    selectedPDFName = f.name;
+    const el = document.getElementById('pdf-chosen');
+    el.textContent = '✅ ' + f.name;
+    el.style.display = 'block';
+    document.getElementById('pdf-drop').style.borderColor = 'var(--success)';
+  };
+  reader.onerror = () => toast('Failed to read file');
+  reader.readAsDataURL(f);
+  // reset so same file can be picked again
+  inp.value = '';
+}
+
+// Drag & drop
+const dropEl = document.getElementById('pdf-drop');
+dropEl.addEventListener('dragover', e => { e.preventDefault(); dropEl.classList.add('over'); });
+dropEl.addEventListener('dragleave', () => dropEl.classList.remove('over'));
+dropEl.addEventListener('drop', e => {
+  e.preventDefault(); dropEl.classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (!f) return;
+  const fakeInp = { files: [f] };
+  handlePDFSelect(fakeInp);
+});
+
+// ─── Add Book ─────────────────────────────────────
+function addBook() {
+  const title = document.getElementById('add-title').value.trim();
+  const author = document.getElementById('add-author').value.trim();
+  const desc = document.getElementById('add-desc').value.trim();
+
+  if (!title) { toast('⚠️ Please enter a book title'); return; }
+  if (!selectedPDFData) { toast('⚠️ Please select a PDF file first'); return; }
+
+  const btn = document.getElementById('add-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  const book = {
+    id: 'b' + Date.now(),
+    title, author, desc,
+    pdfData: selectedPDFData,
+    pdfName: selectedPDFName,
+    currentPage: 1,
+    totalPages: 0,
+    totalReadSecs: 0,
+    addedAt: new Date().toLocaleString(),
+    lastRead: null
+  };
+  books.unshift(book);
+  addActivity('📖', `Added "${title}"`, 'New book added to library');
+  save();
+
+  // Reset form completely
+  document.getElementById('add-title').value = '';
+  document.getElementById('add-author').value = '';
+  document.getElementById('add-desc').value = '';
+  const chosenEl = document.getElementById('pdf-chosen');
+  chosenEl.textContent = '';
+  chosenEl.style.display = 'none';
+  document.getElementById('pdf-drop').style.borderColor = '';
+  selectedPDFData = null;
+  selectedPDFName = '';
+
+  btn.disabled = false;
+  btn.textContent = '➕ Save Book to Library';
+
+  // Show success banner
+  const banner = document.getElementById('add-success');
+  document.getElementById('add-success-text').textContent = `"${title}" saved to your library!`;
+  banner.classList.add('show');
+  setTimeout(() => banner.classList.remove('show'), 4000);
+
+  // Refresh the book list below
+  renderAddList();
+}
+
+// ─── Add Panel List (with delete) ─────────────────
+function renderAddList() {
+  const el = document.getElementById('add-panel-list');
+  if (!books.length) {
+    el.innerHTML = `<div class="empty" style="padding:30px 0"><div class="icon">📭</div><p>No books yet</p></div>`;
+    return;
+  }
+  el.innerHTML = books.map(b => `
+    <div class="edit-book-card">
+      <div class="info">
+        <div class="etitle">${esc(b.title)}</div>
+        <div class="eauthor">${esc(b.author) || 'Unknown author'}</div>
+      </div>
+      <button class="btn btn-danger" style="padding:7px 14px;font-size:12px;white-space:nowrap"
+        onclick="confirmPin('delete','${b.id}')">🗑 Delete</button>
+    </div>`).join('');
+}
+
+// ─── Edit Panel ───────────────────────────────────
+function renderEditList() {
+  const el = document.getElementById('edit-panel-list');
+  if (!books.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">✏️</div><p>No books to edit</p></div>`;
+    return;
+  }
+  el.innerHTML = books.map(b => `
+    <div class="edit-book-card" onclick="confirmPin('edit','${b.id}')">
+      <div class="info">
+        <div class="etitle">${esc(b.title)}</div>
+        <div class="eauthor">${esc(b.author) || 'Unknown author'}</div>
+      </div>
+      <div class="arr">›</div>
+    </div>`).join('');
+}
+
+// ─── PIN Modal ────────────────────────────────────
+function confirmPin(type, bookId) {
+  pinEntry = '';
+  pinTarget = { type, bookId };
+  const label = type === 'delete' ? 'delete this book' : 'edit this book';
+  showModal(`
+    <div class="modal-title">🔐 Enter PIN</div>
+    <div class="modal-sub">Enter your 4-digit PIN to ${label}</div>
+    <div class="pin-row">
+      <div class="pin-dot" id="pd0">—</div>
+      <div class="pin-dot" id="pd1">—</div>
+      <div class="pin-dot" id="pd2">—</div>
+      <div class="pin-dot" id="pd3">—</div>
+    </div>
+    <div class="pin-error" id="pin-err"></div>
+    <div class="pin-keypad">
+      ${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(k =>
+        `<div class="pin-key${k===''?' invisible':''}" onclick="pinKey('${k}')">${k}</div>`
+      ).join('')}
+    </div>
+  `);
+}
+
+function pinKey(k) {
+  if (k === '') return;
+  if (k === '⌫') { pinEntry = pinEntry.slice(0, -1); updatePinDots(); return; }
+  if (pinEntry.length >= 4) return;
+  pinEntry += k;
+  updatePinDots();
+  if (pinEntry.length === 4) {
+    setTimeout(() => {
+      if (pinEntry === CORRECT_PIN) {
+        closeModal();
+        if (pinTarget.type === 'delete') deleteBook(pinTarget.bookId);
+        else openEditForm(pinTarget.bookId);
+      } else {
+        const err = document.getElementById('pin-err');
+        if (err) err.textContent = '❌ Wrong PIN. Try again.';
+        pinEntry = '';
+        updatePinDots();
+      }
+    }, 150);
+  }
+}
+
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('pd' + i);
+    if (!d) continue;
+    d.textContent = i < pinEntry.length ? '●' : '—';
+    d.classList.toggle('filled', i < pinEntry.length);
+  }
+}
+
+// ─── Delete ───────────────────────────────────────
+function deleteBook(id) {
+  const b = books.find(x => x.id === id);
+  if (!b) { toast('Book not found'); return; }
+  const title = b.title;
+  books = books.filter(x => x.id !== id);
+  addActivity('🗑', `Deleted "${title}"`, 'Book removed from library');
+  save();
+  toast(`"${title}" deleted`);
+  renderHome();
+  renderAddList();
+  renderEditList();
+}
+
+// ─── Edit Form ────────────────────────────────────
+function openEditForm(id) {
+  const b = books.find(x => x.id === id);
+  if (!b) { toast('Book not found'); return; }
+  window._editPDFData = null;
+  window._editPDFName = null;
+
+  showModal(`
+    <div class="modal-title" style="margin-bottom:16px">✏️ Edit Book</div>
+    <div class="field"><label>Title</label><input type="text" id="e-title" value="${esc(b.title)}"></div>
+    <div class="field"><label>Author</label><input type="text" id="e-author" value="${esc(b.author)}"></div>
+    <div class="field"><label>Description</label><textarea id="e-desc" style="min-height:70px">${esc(b.desc)}</textarea></div>
+    <div class="field">
+      <label>Replace PDF <span style="color:var(--muted);text-transform:none;font-size:11px">(optional)</span></label>
+      <div class="pdf-drop" style="padding:16px" onclick="document.getElementById('e-pdf').click()">
+        <div style="font-size:12px;color:var(--muted)">Current: ${esc(b.pdfName)}</div>
+        <div style="font-size:12px;margin-top:4px">Tap to replace PDF</div>
+      </div>
+      <div id="e-pdf-label" style="font-size:12px;color:var(--success);margin-top:6px;display:none"></div>
+      <input type="file" id="e-pdf" accept=".pdf,application/pdf" style="display:none" onchange="editPDFChange(this)">
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit('${id}')">Save Changes</button>
+    </div>
+  `);
+}
+
+function editPDFChange(inp) {
+  const f = inp.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    window._editPDFData = e.target.result;
+    window._editPDFName = f.name;
+    const lbl = document.getElementById('e-pdf-label');
+    if (lbl) { lbl.textContent = '✅ New PDF: ' + f.name; lbl.style.display = 'block'; }
+  };
+  r.readAsDataURL(f);
+}
+
+function saveEdit(id) {
+  const b = books.find(x => x.id === id);
+  if (!b) { toast('Book not found'); return; }
+
+  const newTitle = document.getElementById('e-title').value.trim();
+  const newAuthor = document.getElementById('e-author').value.trim();
+  const newDesc = document.getElementById('e-desc').value.trim();
+
+  if (!newTitle) { toast('Title cannot be empty'); return; }
+
+  b.title = newTitle;
+  b.author = newAuthor;
+  b.desc = newDesc;
+
+  if (window._editPDFData) {
+    b.pdfData = window._editPDFData;
+    b.pdfName = window._editPDFName;
+    b.currentPage = 1;
+    b.totalPages = 0;
+    window._editPDFData = null;
+    window._editPDFName = null;
+  }
+
+  addActivity('✏️', `Updated "${b.title}"`, 'Book details edited');
+  save();
+  closeModal();
+  toast(`"${b.title}" updated!`);
+  renderHome();
+  renderEditList();
+}
+
+// ─── Modal ────────────────────────────────────────
+function showModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('open');
+  document.getElementById('modal-content').innerHTML = '';
+}
+
+// ─── PDF Reader ───────────────────────────────────
+async function openBook(id) {
+  const b = books.find(x => x.id === id);
+  if (!b) { toast('Book not found'); return; }
+  if (!b.pdfData) { toast('PDF data missing — re-add the book'); return; }
+
+  currentBookId = id;
+  currentPage = b.currentPage || 1;
+  document.getElementById('reader-title').textContent = b.title;
+  document.getElementById('reader-overlay').classList.add('open');
+  document.getElementById('pdf-container').innerHTML = '<div class="spinner"></div>';
+
+  try {
+    const base64 = b.pdfData.includes(',') ? b.pdfData.split(',')[1] : b.pdfData;
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    pdfDoc = await pdfjsLib.getDocument({ data: bytes }).promise;
+    totalPages = pdfDoc.numPages;
+    b.totalPages = totalPages;
+    if (currentPage > totalPages) currentPage = 1;
+    await renderPDFPage(currentPage);
+    updatePageInfo();
+    startReaderTimer();
+    b.lastRead = new Date().toLocaleString();
+    save();
+    addActivity('📖', `Reading "${b.title}"`, `Page ${currentPage} of ${totalPages}`);
+  } catch(e) {
+    document.getElementById('pdf-container').innerHTML =
+      `<div style="color:var(--danger);text-align:center;padding:40px;font-size:14px">
+        ❌ Failed to load PDF.<br><small style="opacity:.6">${e.message}</small>
+      </div>`;
+  }
+}
+
+async function renderPDFPage(num) {
+  const container = document.getElementById('pdf-container');
+  try {
+    const page = await pdfDoc.getPage(num);
+    const vw = container.clientWidth || window.innerWidth;
+    
+    // 1. Calculate standard display layout zoom
+    const vp0 = page.getViewport({ scale: 1 });
+    const displayScale = vw / vp0.width;
+    
+    // 2. High-DPI Fix: Scale internal backing pixels up matching device capabilities
+    const dpr = window.devicePixelRatio || 1;
+    const renderScale = displayScale * Math.max(dpr, 2); // Ensures minimum ultra-sharp 2x backing graphics
+    const vp = page.getViewport({ scale: renderScale });
+    
+    const canvas = document.createElement('canvas');
+    // Set actual ultra-high definition dimensions internally
+    canvas.width = vp.width;
+    canvas.height = vp.height;
+    
+    // Constraint visual dimensions back down gracefully via CSS dimensions
+    canvas.style.width = '100%';
+    canvas.style.height = 'auto';
+    
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+    container.innerHTML = '';
+    container.appendChild(canvas);
+    container.scrollTop = 0;
+    const pct = Math.round((num / totalPages) * 100);
+    document.getElementById('reader-bar').style.width = pct + '%';
+  } catch(e) {
+    container.innerHTML = `<div style="color:var(--danger);text-align:center;padding:40px">Page load error: ${e.message}</div>`;
+  }
+}
+
+function updatePageInfo() {
+  document.getElementById('page-info').textContent = `${currentPage} / ${totalPages}`;
+}
+
+async function prevPage() {
+  if (!pdfDoc || currentPage <= 1) return;
+  currentPage--;
+  await renderPDFPage(currentPage);
+  updatePageInfo();
+  saveReaderProgress();
+}
+
+async function nextPage() {
+  if (!pdfDoc || currentPage >= totalPages) return;
+  currentPage++;
+  await renderPDFPage(currentPage);
+  updatePageInfo();
+  saveReaderProgress();
+}
+
+function saveReaderProgress() {
+  const b = books.find(x => x.id === currentBookId);
+  if (b) { b.currentPage = currentPage; save(); }
+}
+
+// ─── Reader Timer ─────────────────────────────────
+function startReaderTimer() {
+  readerSeconds = 0;
+  document.getElementById('reader-time').textContent = '0:00';
+  if (readerTimer) clearInterval(readerTimer);
+  readerTimer = setInterval(() => {
+    readerSeconds++;
+    const m = Math.floor(readerSeconds / 60);
+    const s = readerSeconds % 60;
+    document.getElementById('reader-time').textContent = m + ':' + String(s).padStart(2, '0');
+
+    const b = books.find(x => x.id === currentBookId);
+    if (b) b.totalReadSecs = (b.totalReadSecs || 0) + 1;
+
+    const base = parseFloat(localStorage.getItem('fl_today_base') || 0);
+    todayMins = base + readerSeconds / 60;
+    updateDailyProgress();
+
+    if (todayMins >= 20 && !reminderSent) {
+      reminderSent = true;
+      stopHourlyNotifs();
+      sendNotif('🎉 Daily Goal Reached!', "You've read 20 minutes today. Amazing!");
+    }
+    if (readerSeconds % 30 === 0) save();
+  }, 1000);
+}
+
+function stopReaderTimer() {
+  if (readerTimer) { clearInterval(readerTimer); readerTimer = null; }
+  const base = parseFloat(localStorage.getItem('fl_today_base') || 0);
+  localStorage.setItem('fl_today_base', base + readerSeconds / 60);
+  todayMins = base + readerSeconds / 60;
+  readerSeconds = 0;
+}
+
+function updateDailyProgress() {
+  const pct = Math.min(100, Math.round((todayMins / 20) * 100));
+  const b = document.getElementById('daily-bar'); if (b) b.style.width = pct + '%';
+  const p = document.getElementById('daily-pct'); if (p) p.textContent = pct + '%';
+  const n = document.getElementById('daily-note');
+  if (n) n.textContent = todayMins >= 20
+    ? `🎉 Goal complete! You've read ${Math.round(todayMins)} min today.`
+    : `${Math.round(20 - todayMins)} min left to reach your daily goal.`;
+  const m = document.getElementById('stat-mins'); if (m) m.textContent = Math.round(todayMins);
+}
+
+function closeReader() {
+  stopReaderTimer();
+  saveReaderProgress();
+  document.getElementById('reader-overlay').classList.remove('open');
+  pdfDoc = null;
+  currentBookId = null;
+  renderHome();
+}
+
+// ─── Notifications ────────────────────────────────
+async function requestNotifPerms() {
+  if (!('Notification' in window)) { toast('Notifications not supported in this browser'); return; }
+  if (Notification.permission === 'granted') { toast('Reminders already enabled ✅'); return; }
+  const p = await Notification.requestPermission();
+  if (p === 'granted') {
+    document.getElementById('notif-badge').style.display = 'none';
+    toast('Reminders enabled! ✅');
+    startHourlyNotifs();
+  } else {
+    toast('Permission denied — enable in browser settings');
+  }
+}
+
+function sendNotif(title, body) {
+  if (Notification.permission !== 'granted') return;
+  try { new Notification(title, { body }); } catch(e) {}
+}
+
+function startHourlyNotifs() {
+  if (notifInterval) clearInterval(notifInterval);
+  if (todayMins >= 20) return;
+  notifInterval = setInterval(() => {
+    if (todayMins >= 20) { stopHourlyNotifs(); return; }
+    sendNotif('⏰ Read Reminder — Farid Library',
+      `You've read ${Math.round(todayMins)} min today. Goal: 20 min. Open the app and keep going!`);
+  }, 60 * 60 * 1000);
+}
+
+function stopHourlyNotifs() {
+  if (notifInterval) { clearInterval(notifInterval); notifInterval = null; }
+}
+
+// ─── Daily Reset ──────────────────────────────────
+function initDailyBase() {
+  const today = dateKey();
+  const lastDay = localStorage.getItem('fl_last_day');
+  if (lastDay !== today) {
+    localStorage.setItem('fl_last_day', today);
+    localStorage.setItem('fl_today_base', '0');
+    todayMins = 0;
+    reminderSent = false;
+  } else {
+    const base = parseFloat(localStorage.getItem('fl_today_base') || '0');
+    todayMins = base;
+    reminderSent = todayMins >= 20;
+    if (!reminderSent && Notification.permission === 'granted') startHourlyNotifs();
+  }
+}
+
+// ─── Init ─────────────────────────────────────────
+load();
+initDailyBase();
+if (Notification.permission === 'granted') {
+  document.getElementById('notif-badge').style.display = 'none';
+}
+renderHome();
+renderAddList();
+
+// Keyboard nav in reader
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('reader-overlay').classList.contains('open')) return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextPage();
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prevPage();
+  if (e.key === 'Escape') closeReader();
+});
+</script>
+</body>
+</html>
