@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes" />
     <title>Farid Library</title>
 
     <!-- PDF.js CDN -->
@@ -534,38 +534,30 @@
             resize: vertical;
         }
         .form-group .file-input-wrapper {
-    position: relative;          /* 👈 critical */
-    padding: 0;
-    border: 2px dashed #E2E8F0;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    color: var(--text-secondary);
-    background: #FAFBFC;
-    min-height: 48px;
-    transition: 0.2s;
-}
-
-.form-group .file-input-wrapper input[type="file"] {
-    position: absolute;
-    top: 0;
-    left: 0;                     /* 👈 ensures it stays within the wrapper */
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-}
+            position: relative;        /* ← critical fix */
+            padding: 0;
+            border: 2px dashed #E2E8F0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            background: #FAFBFC;
+            min-height: 48px;
+            transition: 0.2s;
+        }
         .form-group .file-input-wrapper:hover {
             border-color: var(--primary-light);
             background: #F8FAFF;
         }
         .form-group .file-input-wrapper input[type="file"] {
             position: absolute;
-            opacity: 0;
+            top: 0;
+            left: 0;                 /* ← critical fix */
             width: 100%;
             height: 100%;
+            opacity: 0;
             cursor: pointer;
         }
         .form-group .file-input-wrapper .file-name {
@@ -1308,6 +1300,62 @@
         const SECURITY_CODE = '5578';
 
         // ================================================================
+        //  INDEXEDDB HELPERS (store PDF blobs)
+        // ================================================================
+        const DB_NAME = 'FaridLibraryDB';
+        const STORE_NAME = 'pdfs';
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, 1);
+                request.onupgradeneeded = (ev) => {
+                    const db = ev.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                    }
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function storePDF(id, data) {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const request = store.put({ id, data });
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+                tx.oncomplete = () => db.close();
+            });
+        }
+
+        async function getPDF(id) {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readonly');
+                const store = tx.objectStore(STORE_NAME);
+                const request = store.get(id);
+                request.onsuccess = () => resolve(request.result ? request.result.data : null);
+                request.onerror = () => reject(request.error);
+                tx.oncomplete = () => db.close();
+            });
+        }
+
+        async function deletePDF(id) {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const request = store.delete(id);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+                tx.oncomplete = () => db.close();
+            });
+        }
+
+        // ================================================================
         //  STATE
         // ================================================================
         let state = {
@@ -1334,7 +1382,7 @@
         let editTargetId = null;
 
         // ================================================================
-        //  DATA MANAGEMENT
+        //  DATA MANAGEMENT (metadata in localStorage, PDFs in IndexedDB)
         // ================================================================
         function loadData() {
             try {
@@ -1342,11 +1390,9 @@
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     state = parsed;
-                    // ensure stats exist
                     if (!state.stats) {
                         state.stats = { totalMinutesRead: 0, lastReadDate: null, dailyReadMinutes: 0, streak: 0 };
                     }
-                    // ensure each book has all fields
                     state.books = state.books.map(b => ({
                         ...b,
                         currentPage: b.currentPage || 1,
@@ -1354,8 +1400,8 @@
                         readingTime: b.readingTime || 0,
                         lastRead: b.lastRead || null,
                         addedDate: b.addedDate || new Date().toISOString(),
+                        // pdfData will be loaded separately
                     }));
-                    // reset daily minutes if new day
                     const today = new Date().toDateString();
                     if (state.stats.lastReadDate !== today) {
                         state.stats.dailyReadMinutes = 0;
@@ -1369,7 +1415,10 @@
                 console.warn('Data load error, resetting', e);
                 resetData();
             }
-            updateAll();
+            // After loading metadata, fetch PDFs and attach
+            loadAllPDFs().then(() => {
+                updateAll();
+            });
         }
 
         function resetData() {
@@ -1387,9 +1436,32 @@
 
         function saveData() {
             try {
-                localStorage.setItem(APP_KEY, JSON.stringify(state));
+                // Save only metadata (no pdfData)
+                const toSave = {
+                    books: state.books.map(b => {
+                        const { pdfData, ...rest } = b;
+                        return rest;
+                    }),
+                    stats: state.stats
+                };
+                localStorage.setItem(APP_KEY, JSON.stringify(toSave));
             } catch (e) {
                 console.error('Save error', e);
+            }
+        }
+
+        async function loadAllPDFs() {
+            for (const book of state.books) {
+                try {
+                    const data = await getPDF(book.id);
+                    if (data) {
+                        book.pdfData = data;
+                    } else {
+                        book.pdfData = null;
+                    }
+                } catch (e) {
+                    book.pdfData = null;
+                }
             }
         }
 
@@ -1407,11 +1479,7 @@
         function updateStreak() {
             const today = new Date().toDateString();
             const last = state.stats.lastReadDate;
-            if (last === today) {
-                // already counted
-                return;
-            }
-            // check if yesterday
+            if (last === today) return;
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
             if (last === yesterday.toDateString()) {
@@ -1449,7 +1517,6 @@
         function checkDailyGoal() {
             const minutes = getTodayMinutes();
             if (minutes >= DAILY_GOAL) {
-                // goal met - hide badge
                 document.getElementById('notifBadge').style.display = 'none';
                 return true;
             }
@@ -1461,7 +1528,6 @@
         function sendReminder() {
             const minutes = getTodayMinutes();
             if (minutes >= DAILY_GOAL) return;
-
             if (Notification.permission === 'granted') {
                 const remaining = Math.round(DAILY_GOAL - minutes);
                 new Notification('📚 Farid Library', {
@@ -1475,7 +1541,6 @@
         }
 
         function startNotificationScheduler() {
-            // Check every hour
             setInterval(() => {
                 const minutes = getTodayMinutes();
                 if (minutes < DAILY_GOAL) {
@@ -1484,22 +1549,14 @@
                 }
             }, NOTIF_CHECK_INTERVAL);
 
-            // Also check on page visibility change
             document.addEventListener('visibilitychange', () => {
                 if (!document.hidden) {
-                    const minutes = getTodayMinutes();
-                    if (minutes < DAILY_GOAL) {
-                        // subtle check
-                    }
                     updateAll();
                 }
             });
 
-            // initial notification permission
             if (Notification.permission === 'default') {
-                setTimeout(() => {
-                    Notification.requestPermission();
-                }, 3000);
+                setTimeout(() => Notification.requestPermission(), 3000);
             }
         }
 
@@ -1555,7 +1612,6 @@
             empty.style.display = 'none';
             countLabel.textContent = state.books.length + ' book' + (state.books.length > 1 ? 's' : '');
 
-            // Continue reading
             const contSection = document.getElementById('continueReadingSection');
             const lastBook = state.books.find(b => b.lastRead) || state.books[0];
             if (lastBook) {
@@ -1579,7 +1635,6 @@
                 contSection.innerHTML = '';
             }
 
-            // Books grid
             grid.innerHTML = state.books.map(book => `
             <div class="book-card" onclick="openReading('${book.id}')">
               <div class="book-cover" style="background:${getBookColor(book.id)};">
@@ -1689,7 +1744,6 @@
             renderHome();
             renderAddList();
             renderEditList();
-            // update reading overlay title if open
             if (readingState.bookId) {
                 const book = getBook(readingState.bookId);
                 if (book) {
@@ -1726,9 +1780,9 @@
         }
 
         // ================================================================
-        //  ADD BOOK
+        //  ADD BOOK (with IndexedDB)
         // ================================================================
-        document.getElementById('addBookForm').addEventListener('submit', function(e) {
+        document.getElementById('addBookForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const name = document.getElementById('bookName').value.trim();
@@ -1751,50 +1805,45 @@
                 return;
             }
 
-            // Check size (max 10MB for localStorage)
-            if (file.size > 10 * 1024 * 1024) {
-                showToast('⚠️ PDF too large. Max 10MB.', 'error');
-                return;
+            // Read file as ArrayBuffer for IndexedDB
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const base64 = btoa(
+                    new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+                );
+
+                const newBook = {
+                    id: generateId(),
+                    name: name,
+                    writer: writer,
+                    description: desc || '',
+                    pdfData: base64, // will be stored in IndexedDB
+                    currentPage: 1,
+                    totalPages: 1,
+                    readingTime: 0,
+                    lastRead: null,
+                    addedDate: new Date().toISOString(),
+                };
+
+                // Store PDF in IndexedDB
+                await storePDF(newBook.id, base64);
+
+                // Add to state
+                state.books.unshift(newBook);
+                saveData();
+                updateAll();
+                document.getElementById('addBookForm').reset();
+                document.getElementById('fileWrapper').classList.remove('has-file');
+                document.getElementById('fileNameDisplay').textContent = '';
+                document.getElementById('fileLabel').textContent = 'Choose PDF file';
+                showToast('✅ Book "' + name + '" added successfully!', 'success');
+
+                // Try to get page count
+                loadPdfMetadata(newBook.id, base64);
+            } catch (err) {
+                console.error('Add book error', err);
+                showToast('⚠️ Error adding book. Please try again.', 'error');
             }
-
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                try {
-                    const base64 = ev.target.result.split(',')[1] || ev.target.result;
-
-                    const newBook = {
-                        id: generateId(),
-                        name: name,
-                        writer: writer,
-                        description: desc || '',
-                        pdfData: base64,
-                        currentPage: 1,
-                        totalPages: 1,
-                        readingTime: 0,
-                        lastRead: null,
-                        addedDate: new Date().toISOString(),
-                    };
-
-                    state.books.unshift(newBook);
-                    saveData();
-                    updateAll();
-                    document.getElementById('addBookForm').reset();
-                    document.getElementById('fileWrapper').classList.remove('has-file');
-                    document.getElementById('fileNameDisplay').textContent = '';
-                    document.getElementById('fileLabel').textContent = 'Choose PDF file';
-                    showToast('✅ Book "' + name + '" added successfully!', 'success');
-
-                    // Try to load PDF to get page count
-                    loadPdfMetadata(newBook.id, base64);
-                } catch (err) {
-                    console.error('Add book error', err);
-                    showToast('⚠️ Error adding book. Please try again.', 'error');
-                }
-            };
-            reader.onerror = function() {
-                showToast('⚠️ Error reading PDF file.', 'error');
-            };
-            reader.readAsDataURL(file);
         });
 
         // File input label update
@@ -1842,12 +1891,11 @@
         }
 
         // ================================================================
-        //  DELETE BOOK
+        //  DELETE BOOK (also from IndexedDB)
         // ================================================================
-        function deleteBook(id) {
+        async function deleteBook(id) {
             if (!confirm('Delete this book?')) return;
 
-            // Check code if in edit modal context
             const code = prompt('Enter security code (5578) to delete:');
             if (code !== SECURITY_CODE) {
                 showToast('⚠️ Incorrect security code.', 'error');
@@ -1856,6 +1904,9 @@
 
             const book = getBook(id);
             if (!book) return;
+
+            // Remove from IndexedDB
+            await deletePDF(id);
 
             state.books = state.books.filter(b => b.id !== id);
             if (readingState.bookId === id) {
@@ -1888,7 +1939,6 @@
             editTargetId = null;
         }
 
-        // Edit form submit
         document.getElementById('editForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -1921,8 +1971,7 @@
             showToast('✅ Book updated successfully!', 'success');
         });
 
-        // Delete from edit modal
-        function deleteBookFromEdit() {
+        async function deleteBookFromEdit() {
             const id = document.getElementById('editBookId').value;
             const code = document.getElementById('editSecurityCode').value.trim();
             if (code !== SECURITY_CODE) {
@@ -1934,6 +1983,7 @@
             const book = getBook(id);
             if (!book) return;
 
+            await deletePDF(id);
             state.books = state.books.filter(b => b.id !== id);
             if (readingState.bookId === id) {
                 closeReading();
@@ -1944,13 +1994,12 @@
             showToast('🗑️ "' + book.name + '" deleted.', 'success');
         }
 
-        // Close modal on overlay click
         document.getElementById('editModal').addEventListener('click', function(e) {
             if (e.target === this) closeEditModal();
         });
 
         // ================================================================
-        //  READING VIEW
+        //  READING VIEW (with IndexedDB)
         // ================================================================
         async function openReading(id) {
             const book = getBook(id);
@@ -1959,12 +2008,22 @@
                 return;
             }
 
+            // If pdfData not loaded, try to fetch from IndexedDB
             if (!book.pdfData) {
-                showToast('⚠️ No PDF data for this book.', 'error');
-                return;
+                try {
+                    const data = await getPDF(id);
+                    if (data) {
+                        book.pdfData = data;
+                    } else {
+                        showToast('⚠️ PDF data not found.', 'error');
+                        return;
+                    }
+                } catch (e) {
+                    showToast('⚠️ Error loading PDF.', 'error');
+                    return;
+                }
             }
 
-            // Close any existing reading
             if (readingState.bookId) {
                 saveReadingProgress();
             }
@@ -1983,11 +2042,9 @@
             document.getElementById('readingTimeDisplay').textContent = '00:00';
             document.getElementById('timerIcon').className = 'fas fa-play';
 
-            // Clear previous PDF pages
             document.getElementById('pdfPages').innerHTML = '';
             document.getElementById('pdfLoading').style.display = 'flex';
 
-            // Load PDF
             try {
                 const pdfjsLib = window.pdfjsLib;
                 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -2005,7 +2062,6 @@
                 book.totalPages = pdf.numPages;
                 document.getElementById('totalPages').textContent = pdf.numPages;
 
-                // If current page > total, reset
                 if (readingState.currentPage > pdf.numPages) {
                     readingState.currentPage = 1;
                     book.currentPage = 1;
@@ -2015,10 +2071,8 @@
                 await renderPdfPage(readingState.currentPage);
                 document.getElementById('pdfLoading').style.display = 'none';
 
-                // Start timer automatically
                 startReadingTimer();
 
-                // Update last read
                 book.lastRead = new Date().toISOString();
                 saveData();
                 updateAll();
@@ -2053,10 +2107,8 @@
                 await page.render({ canvasContext: context, viewport: viewport }).promise;
                 container.appendChild(canvas);
 
-                // Update page input
                 document.getElementById('pageInput').value = pageNum;
 
-                // Save progress
                 const book = getBook(readingState.bookId);
                 if (book) {
                     book.currentPage = pageNum;
@@ -2076,7 +2128,6 @@
             if (next <= readingState.totalPages) {
                 readingState.currentPage = next;
                 renderPdfPage(next);
-                // Update last read
                 const book = getBook(readingState.bookId);
                 if (book) {
                     book.lastRead = new Date().toISOString();
@@ -2097,7 +2148,6 @@
             }
         }
 
-        // Page input change
         document.getElementById('pageInput').addEventListener('change', function() {
             let val = parseInt(this.value);
             if (isNaN(val) || val < 1) val = 1;
@@ -2114,7 +2164,6 @@
             }
         });
 
-        // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             if (!document.getElementById('readingOverlay').classList.contains('open')) return;
             if (e.key === 'ArrowRight' || e.key === ' ') {
@@ -2144,13 +2193,10 @@
                     readingState.seconds++;
                     updateTimerDisplay();
 
-                    // Save every 10 seconds
                     if (readingState.seconds % 10 === 0) {
-                        const minutes = readingState.seconds / 60;
                         const book = getBook(readingState.bookId);
                         if (book) {
-                            book.readingTime = (book.readingTime || 0) + 0.166; // ~10 sec
-                            // Only add to daily when we have significant time
+                            book.readingTime = (book.readingTime || 0) + 0.166;
                             if (readingState.seconds % 60 === 0) {
                                 addReadingTime(1);
                             }
@@ -2169,9 +2215,6 @@
             }
             readingState.isPaused = !readingState.isPaused;
             document.getElementById('timerIcon').className = readingState.isPaused ? 'fas fa-play' : 'fas fa-pause';
-            if (!readingState.isPaused) {
-                // resume
-            }
         }
 
         function updateTimerDisplay() {
@@ -2187,11 +2230,9 @@
             if (book) {
                 book.currentPage = readingState.currentPage;
                 book.lastRead = new Date().toISOString();
-                // Add any remaining seconds as reading time
                 if (readingState.seconds > 0) {
                     const extraMin = readingState.seconds / 60;
                     book.readingTime = (book.readingTime || 0) + extraMin;
-                    // We already add to daily in the timer, but add remaining
                     saveData();
                 }
                 saveData();
@@ -2225,15 +2266,11 @@
         document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => {
             btn.addEventListener('click', function() {
                 const tabId = this.dataset.tab;
-                // Update nav
                 document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                // Update views
                 document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
                 document.getElementById(tabId).classList.add('active');
-                // Scroll to top
                 document.getElementById('mainContent').scrollTop = 0;
-                // Update lists
                 if (tabId === 'tabEdit') renderEditList();
                 if (tabId === 'tabAdd') renderAddList();
                 if (tabId === 'tabHome') renderHome();
@@ -2246,17 +2283,13 @@
         function init() {
             loadData();
             startNotificationScheduler();
-
-            // Check daily goal on load
             checkDailyGoal();
 
-            // Update stats every minute
             setInterval(() => {
                 renderStats();
                 checkDailyGoal();
             }, 60000);
 
-            // Handle visibility change to save reading progress
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden && readingState.bookId) {
                     saveReadingProgress();
@@ -2266,26 +2299,20 @@
                 }
             });
 
-            // Before unload, save reading
             window.addEventListener('beforeunload', () => {
                 if (readingState.bookId) {
                     saveReadingProgress();
                 }
             });
 
-            console.log('📚 Farid Library initialized.');
-            console.log('📖 Books:', state.books.length);
-            console.log('⏰ Daily goal:', DAILY_GOAL + ' minutes');
+            console.log('📚 Farid Library initialized (IndexedDB)');
         }
 
-        // Start
         document.addEventListener('DOMContentLoaded', init);
 
-        // Handle PDF.js worker
         if (typeof window.pdfjsLib !== 'undefined') {
             window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
     </script>
-
 </body>
 </html>
