@@ -348,7 +348,6 @@
   </div>
 
   <main id="main">
-    <!-- HOME -->
     <div class="panel active" id="panel-home">
       <div class="section-label">Today's Progress</div>
       <div class="daily-bar-wrap">
@@ -370,7 +369,6 @@
       <div id="activity-list"></div>
     </div>
 
-    <!-- ADD -->
     <div class="panel" id="panel-add">
       <div id="add-success" class="success-banner">
         <div class="s-icon">✅</div>
@@ -409,7 +407,6 @@
       <div id="add-panel-list"></div>
     </div>
 
-    <!-- EDIT -->
     <div class="panel" id="panel-edit">
       <div class="section-label">Select a book to edit</div>
       <div id="edit-panel-list"></div>
@@ -442,7 +439,6 @@
   </nav>
 </div>
 
-<!-- Reader -->
 <div id="reader-overlay">
   <div class="reader-topbar">
     <button class="back-btn" onclick="closeReader()">← Back</button>
@@ -464,7 +460,6 @@
   </div>
 </div>
 
-<!-- Modal -->
 <div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">✕</button>
@@ -475,18 +470,26 @@
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+
 <script>
 // ─── Config ───────────────────────────────────────
 const CORRECT_PIN = '5578';
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+// Setup highly custom database architecture with LocalForage
+localforage.config({
+  name: 'FaridLibraryDB',
+  storeName: 'books_repository'
+});
+
 // ─── State ────────────────────────────────────────
 let books = [];
 let activity = [];
 let todayMins = 0;
 let streak = 0;
-let selectedPDFData = null;
+let selectedPDFData = null; // Storing clean native binary formats directly
 let selectedPDFName = '';
 let currentBookId = null;
 let pdfDoc = null;
@@ -499,27 +502,36 @@ let reminderSent = false;
 let pinEntry = '';
 let pinTarget = { type: '', bookId: '' };
 
-// ─── Storage ──────────────────────────────────────
-function save() {
+// ─── Storage Engine (Async IndexedDB Implementation) ─
+async function save() {
   try {
-    localStorage.setItem('fl_books', JSON.stringify(books));
-    localStorage.setItem('fl_activity', JSON.stringify(activity.slice(0, 50)));
+    await localforage.setItem('fl_books', books);
+    await localforage.setItem('fl_activity', activity.slice(0, 50));
+    
+    // Manage stats/metrics reliably across devices
     const stored = JSON.parse(localStorage.getItem('fl_daily') || '{}');
     stored[dateKey()] = todayMins;
     localStorage.setItem('fl_daily', JSON.stringify(stored));
     localStorage.setItem('fl_streak', streak);
-  } catch(e) { console.warn('Save error', e); }
+  } catch(e) { 
+    console.error('Asynchronous Database Sync Fault: ', e); 
+    toast('⚠️ Storage allocation limit triggered');
+  }
 }
 
-function load() {
+async function load() {
   try {
-    books = JSON.parse(localStorage.getItem('fl_books') || '[]');
-    activity = JSON.parse(localStorage.getItem('fl_activity') || '[]');
+    books = await localforage.getItem('fl_books') || [];
+    activity = await localforage.getItem('fl_activity') || [];
+    
     const stored = JSON.parse(localStorage.getItem('fl_daily') || '{}');
     todayMins = stored[dateKey()] || 0;
     streak = parseInt(localStorage.getItem('fl_streak') || '0');
     calcStreak();
-  } catch(e) { books=[]; activity=[]; }
+  } catch(e) { 
+    books = []; activity = []; 
+    console.error('Database instantiation error: ', e);
+  }
 }
 
 function dateKey() { return new Date().toISOString().slice(0, 10); }
@@ -624,29 +636,30 @@ function bookCardHTML(b) {
   </div>`;
 }
 
-// ─── PDF Select ───────────────────────────────────
+// ─── PDF Selection Native Flow ────────────────────
 function handlePDFSelect(inp) {
   const f = inp.files[0];
   if (!f) return;
   if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
     toast('Please select a valid PDF file'); return;
   }
+  
   const reader = new FileReader();
   reader.onload = e => {
+    // We are preserving pure binary ArrayBuffer arrays to eliminate data inflation overrides
     selectedPDFData = e.target.result;
     selectedPDFName = f.name;
     const el = document.getElementById('pdf-chosen');
-    el.textContent = '✅ ' + f.name;
+    el.textContent = '✅ Ready: ' + f.name;
     el.style.display = 'block';
     document.getElementById('pdf-drop').style.borderColor = 'var(--success)';
   };
-  reader.onerror = () => toast('Failed to read file');
-  reader.readAsDataURL(f);
-  // reset so same file can be picked again
+  reader.onerror = () => toast('Failed to read file natively');
+  reader.readAsArrayBuffer(f);
   inp.value = '';
 }
 
-// Drag & drop
+// Drag & drop handlers
 const dropEl = document.getElementById('pdf-drop');
 dropEl.addEventListener('dragover', e => { e.preventDefault(); dropEl.classList.add('over'); });
 dropEl.addEventListener('dragleave', () => dropEl.classList.remove('over'));
@@ -658,8 +671,8 @@ dropEl.addEventListener('drop', e => {
   handlePDFSelect(fakeInp);
 });
 
-// ─── Add Book ─────────────────────────────────────
-function addBook() {
+// ─── Add Book Flow ────────────────────────────────
+async function addBook() {
   const title = document.getElementById('add-title').value.trim();
   const author = document.getElementById('add-author').value.trim();
   const desc = document.getElementById('add-desc').value.trim();
@@ -669,7 +682,7 @@ function addBook() {
 
   const btn = document.getElementById('add-btn');
   btn.disabled = true;
-  btn.textContent = 'Saving...';
+  btn.textContent = 'Saving directly to Device DB...';
 
   const book = {
     id: 'b' + Date.now(),
@@ -682,11 +695,12 @@ function addBook() {
     addedAt: new Date().toLocaleString(),
     lastRead: null
   };
+  
   books.unshift(book);
-  addActivity('📖', `Added "${title}"`, 'New book added to library');
-  save();
+  addActivity('📖', `Added "${title}"`, 'New book saved securely');
+  await save();
 
-  // Reset form completely
+  // Reset parameters
   document.getElementById('add-title').value = '';
   document.getElementById('add-author').value = '';
   document.getElementById('add-desc').value = '';
@@ -700,17 +714,15 @@ function addBook() {
   btn.disabled = false;
   btn.textContent = '➕ Save Book to Library';
 
-  // Show success banner
   const banner = document.getElementById('add-success');
-  document.getElementById('add-success-text').textContent = `"${title}" saved to your library!`;
+  document.getElementById('add-success-text').textContent = `"${title}" saved locally!`;
   banner.classList.add('show');
   setTimeout(() => banner.classList.remove('show'), 4000);
 
-  // Refresh the book list below
   renderAddList();
 }
 
-// ─── Add Panel List (with delete) ─────────────────
+// ─── Control Panels ───────────────────────────────
 function renderAddList() {
   const el = document.getElementById('add-panel-list');
   if (!books.length) {
@@ -728,7 +740,6 @@ function renderAddList() {
     </div>`).join('');
 }
 
-// ─── Edit Panel ───────────────────────────────────
 function renderEditList() {
   const el = document.getElementById('edit-panel-list');
   if (!books.length) {
@@ -745,7 +756,7 @@ function renderEditList() {
     </div>`).join('');
 }
 
-// ─── PIN Modal ────────────────────────────────────
+// ─── Security Handlers ────────────────────────────
 function confirmPin(type, bookId) {
   pinEntry = '';
   pinTarget = { type, bookId };
@@ -775,10 +786,10 @@ function pinKey(k) {
   pinEntry += k;
   updatePinDots();
   if (pinEntry.length === 4) {
-    setTimeout(() => {
+    setTimeout(async () => {
       if (pinEntry === CORRECT_PIN) {
         closeModal();
-        if (pinTarget.type === 'delete') deleteBook(pinTarget.bookId);
+        if (pinTarget.type === 'delete') await deleteBook(pinTarget.bookId);
         else openEditForm(pinTarget.bookId);
       } else {
         const err = document.getElementById('pin-err');
@@ -799,21 +810,20 @@ function updatePinDots() {
   }
 }
 
-// ─── Delete ───────────────────────────────────────
-function deleteBook(id) {
+async function deleteBook(id) {
   const b = books.find(x => x.id === id);
   if (!b) { toast('Book not found'); return; }
   const title = b.title;
   books = books.filter(x => x.id !== id);
-  addActivity('🗑', `Deleted "${title}"`, 'Book removed from library');
-  save();
+  addActivity('🗑', `Deleted "${title}"`, 'Book removed safely');
+  await save();
   toast(`"${title}" deleted`);
   renderHome();
   renderAddList();
   renderEditList();
 }
 
-// ─── Edit Form ────────────────────────────────────
+// ─── Edit Sub-modules ─────────────────────────────
 function openEditForm(id) {
   const b = books.find(x => x.id === id);
   if (!b) { toast('Book not found'); return; }
@@ -849,12 +859,12 @@ function editPDFChange(inp) {
     window._editPDFData = e.target.result;
     window._editPDFName = f.name;
     const lbl = document.getElementById('e-pdf-label');
-    if (lbl) { lbl.textContent = '✅ New PDF: ' + f.name; lbl.style.display = 'block'; }
+    if (lbl) { lbl.textContent = '✅ New PDF Ready'; lbl.style.display = 'block'; }
   };
-  r.readAsDataURL(f);
+  r.readAsArrayBuffer(f);
 }
 
-function saveEdit(id) {
+async function saveEdit(id) {
   const b = books.find(x => x.id === id);
   if (!b) { toast('Book not found'); return; }
 
@@ -877,15 +887,14 @@ function saveEdit(id) {
     window._editPDFName = null;
   }
 
-  addActivity('✏️', `Updated "${b.title}"`, 'Book details edited');
-  save();
+  addActivity('✏️', `Updated "${b.title}"`, 'Book modifications compiled');
+  await save();
   closeModal();
   toast(`"${b.title}" updated!`);
   renderHome();
   renderEditList();
 }
 
-// ─── Modal ────────────────────────────────────────
 function showModal(html) {
   document.getElementById('modal-content').innerHTML = html;
   document.getElementById('modal-bg').classList.add('open');
@@ -895,11 +904,11 @@ function closeModal() {
   document.getElementById('modal-content').innerHTML = '';
 }
 
-// ─── PDF Reader ───────────────────────────────────
+// ─── Crisp Rendering HD PDF Engine ────────────────
 async function openBook(id) {
   const b = books.find(x => x.id === id);
   if (!b) { toast('Book not found'); return; }
-  if (!b.pdfData) { toast('PDF data missing — re-add the book'); return; }
+  if (!b.pdfData) { toast('PDF data invalid'); return; }
 
   currentBookId = id;
   currentPage = b.currentPage || 1;
@@ -908,11 +917,18 @@ async function openBook(id) {
   document.getElementById('pdf-container').innerHTML = '<div class="spinner"></div>';
 
   try {
-    const base64 = b.pdfData.includes(',') ? b.pdfData.split(',')[1] : b.pdfData;
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    pdfDoc = await pdfjsLib.getDocument({ data: bytes }).promise;
+    let uintArray;
+    if (b.pdfData instanceof ArrayBuffer) {
+      uintArray = new Uint8Array(b.pdfData);
+    } else if (typeof b.pdfData === 'string') {
+      // Compatibility fallback loop if old data models exist
+      const base64 = b.pdfData.includes(',') ? b.pdfData.split(',')[1] : b.pdfData;
+      const binary = atob(base64);
+      uintArray = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) uintArray[i] = binary.charCodeAt(i);
+    }
+
+    pdfDoc = await pdfjsLib.getDocument({ data: uintArray }).promise;
     totalPages = pdfDoc.numPages;
     b.totalPages = totalPages;
     if (currentPage > totalPages) currentPage = 1;
@@ -920,12 +936,11 @@ async function openBook(id) {
     updatePageInfo();
     startReaderTimer();
     b.lastRead = new Date().toLocaleString();
-    save();
-    addActivity('📖', `Reading "${b.title}"`, `Page ${currentPage} of ${totalPages}`);
+    await save();
   } catch(e) {
     document.getElementById('pdf-container').innerHTML =
       `<div style="color:var(--danger);text-align:center;padding:40px;font-size:14px">
-        ❌ Failed to load PDF.<br><small style="opacity:.6">${e.message}</small>
+        ❌ Failed to initialize context.<br><small style="opacity:.6">${e.message}</small>
       </div>`;
   }
 }
@@ -936,21 +951,18 @@ async function renderPDFPage(num) {
     const page = await pdfDoc.getPage(num);
     const vw = container.clientWidth || window.innerWidth;
     
-    // 1. Calculate standard display layout zoom
     const vp0 = page.getViewport({ scale: 1 });
     const displayScale = vw / vp0.width;
     
-    // 2. High-DPI Fix: Scale internal backing pixels up matching device capabilities
+    // High-DPI Layer Injection Matrix
     const dpr = window.devicePixelRatio || 1;
-    const renderScale = displayScale * Math.max(dpr, 2); // Ensures minimum ultra-sharp 2x backing graphics
+    const renderScale = displayScale * Math.max(dpr, 2); 
     const vp = page.getViewport({ scale: renderScale });
     
     const canvas = document.createElement('canvas');
-    // Set actual ultra-high definition dimensions internally
     canvas.width = vp.width;
     canvas.height = vp.height;
     
-    // Constraint visual dimensions back down gracefully via CSS dimensions
     canvas.style.width = '100%';
     canvas.style.height = 'auto';
     
@@ -974,7 +986,7 @@ async function prevPage() {
   currentPage--;
   await renderPDFPage(currentPage);
   updatePageInfo();
-  saveReaderProgress();
+  await saveReaderProgress();
 }
 
 async function nextPage() {
@@ -982,20 +994,20 @@ async function nextPage() {
   currentPage++;
   await renderPDFPage(currentPage);
   updatePageInfo();
-  saveReaderProgress();
+  await saveReaderProgress();
 }
 
-function saveReaderProgress() {
+async function saveReaderProgress() {
   const b = books.find(x => x.id === currentBookId);
-  if (b) { b.currentPage = currentPage; save(); }
+  if (b) { b.currentPage = currentPage; await save(); }
 }
 
-// ─── Reader Timer ─────────────────────────────────
+// ─── Clocking Routines ────────────────────────────
 function startReaderTimer() {
   readerSeconds = 0;
   document.getElementById('reader-time').textContent = '0:00';
   if (readerTimer) clearInterval(readerTimer);
-  readerTimer = setInterval(() => {
+  readerTimer = setInterval(async () => {
     readerSeconds++;
     const m = Math.floor(readerSeconds / 60);
     const s = readerSeconds % 60;
@@ -1013,7 +1025,7 @@ function startReaderTimer() {
       stopHourlyNotifs();
       sendNotif('🎉 Daily Goal Reached!', "You've read 20 minutes today. Amazing!");
     }
-    if (readerSeconds % 30 === 0) save();
+    if (readerSeconds % 30 === 0) await save();
   }, 1000);
 }
 
@@ -1036,26 +1048,24 @@ function updateDailyProgress() {
   const m = document.getElementById('stat-mins'); if (m) m.textContent = Math.round(todayMins);
 }
 
-function closeReader() {
+async function closeReader() {
   stopReaderTimer();
-  saveReaderProgress();
+  await saveReaderProgress();
   document.getElementById('reader-overlay').classList.remove('open');
   pdfDoc = null;
   currentBookId = null;
   renderHome();
 }
 
-// ─── Notifications ────────────────────────────────
+// ─── Reminders ────────────────────────────────────
 async function requestNotifPerms() {
-  if (!('Notification' in window)) { toast('Notifications not supported in this browser'); return; }
+  if (!('Notification' in window)) { toast('Notifications not supported'); return; }
   if (Notification.permission === 'granted') { toast('Reminders already enabled ✅'); return; }
   const p = await Notification.requestPermission();
   if (p === 'granted') {
     document.getElementById('notif-badge').style.display = 'none';
     toast('Reminders enabled! ✅');
     startHourlyNotifs();
-  } else {
-    toast('Permission denied — enable in browser settings');
   }
 }
 
@@ -1070,15 +1080,14 @@ function startHourlyNotifs() {
   notifInterval = setInterval(() => {
     if (todayMins >= 20) { stopHourlyNotifs(); return; }
     sendNotif('⏰ Read Reminder — Farid Library',
-      `You've read ${Math.round(todayMins)} min today. Goal: 20 min. Open the app and keep going!`);
-  }, 60 * 60 * 1000);
+      `You've read ${Math.round(todayMins)} min today. Goal: 20 min.`);
+  }, 3600000);
 }
 
 function stopHourlyNotifs() {
   if (notifInterval) { clearInterval(notifInterval); notifInterval = null; }
 }
 
-// ─── Daily Reset ──────────────────────────────────
 function initDailyBase() {
   const today = dateKey();
   const lastDay = localStorage.getItem('fl_last_day');
@@ -1095,16 +1104,17 @@ function initDailyBase() {
   }
 }
 
-// ─── Init ─────────────────────────────────────────
-load();
-initDailyBase();
-if (Notification.permission === 'granted') {
-  document.getElementById('notif-badge').style.display = 'none';
-}
-renderHome();
-renderAddList();
+// ─── Master Initializer ───────────────────────────
+(async () => {
+  await load();
+  initDailyBase();
+  if (Notification.permission === 'granted') {
+    document.getElementById('notif-badge').style.display = 'none';
+  }
+  renderHome();
+  renderAddList();
+})();
 
-// Keyboard nav in reader
 document.addEventListener('keydown', e => {
   if (!document.getElementById('reader-overlay').classList.contains('open')) return;
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextPage();
