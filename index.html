@@ -20,37 +20,36 @@
         }
     </script>
     <style>
-        /* Custom scrollbar for an elite look */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #030712; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #d4af37; }
         .glassmorphism {
-            background: rgba(10, 25, 47, 0.7);
-            backdrop-filter: blur(12px);
+            background: rgba(10, 25, 47, 0.85);
+            backdrop-filter: blur(16px);
             border: 1px solid rgba(212, 175, 55, 0.1);
         }
     </style>
 </head>
-<body class="bg-slate950 text-gray-100 font-sans min-h-screen pb-24 selection:bg-goldAccent selection:text-slate950">
+<body class="bg-slate950 text-gray-100 font-sans min-h-screen pb-28 selection:bg-goldAccent selection:text-slate950">
 
-    <header class="sticky top-0 z-50 glassmorphism border-b border-gray-800 px-6 py-4 flex justify-between items-center">
+    <header class="sticky top-0 z-40 glassmorphism border-b border-gray-800 px-6 py-4 flex justify-between items-center">
         <div>
             <h1 class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-silverText to-goldAccent">
                 FARID LIBRARY
             </h1>
-            <p class="text-xs text-goldAccent tracking-widest uppercase">Decision & Intelligence Layer</p>
+            <p class="text-[10px] text-goldAccent tracking-widest uppercase font-semibold">Decision & Intelligence Layer</p>
         </div>
-        <div id="reminder-status" class="text-xs bg-gray-900 border border-gray-800 px-3 py-1.5 rounded-full text-silverText flex items-center gap-2">
+        <div id="reminder-status" class="text-xs bg-gray-900/90 border border-gray-800 px-3 py-1.5 rounded-full text-silverText flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse" id="status-dot"></span>
-            <span id="status-text">Daily Target: 0 / 20 mins</span>
+            <span id="status-text">Target: 0 / 20 mins</span>
         </div>
     </header>
 
     <main class="max-w-4xl mx-auto px-4 pt-6">
         
         <section id="tab-home" class="tab-content space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="glassmorphism p-5 rounded-xl flex flex-col justify-between">
                     <span class="text-xs font-semibold tracking-wider uppercase text-silverText">Total Books</span>
                     <span class="text-3xl font-bold text-white mt-2" id="stat-total-books">0</span>
@@ -149,37 +148,35 @@
         <section id="tab-reading" class="tab-content hidden space-y-4">
             <div class="flex justify-between items-center">
                 <button onclick="stopReadingSession()" class="text-xs tracking-widest font-bold text-silverText uppercase bg-gray-900 border border-gray-800 px-4 py-2 rounded-lg hover:border-goldAccent transition">
-                    ← Close Strategy Desk
+                    ← Close Desk
                 </button>
                 <div class="text-right">
                     <h3 id="reading-title" class="text-sm font-bold text-white truncate max-w-xs">Document Analysis</h3>
                     <p id="session-timer" class="text-xs text-goldAccent font-mono tracking-wider">Session Run-Time: 00:00</p>
                 </div>
             </div>
-            <div class="w-full h-[70vh] rounded-xl border border-gray-800 overflow-hidden bg-white">
+            <div class="w-full h-[72vh] rounded-xl border border-gray-800 overflow-hidden bg-white">
                 <iframe id="pdf-viewer" class="w-full h-full" src=""></iframe>
             </div>
         </section>
 
     </main>
 
-    <nav id="system-dock" class="fixed bottom-6 left-1/2 -translate-x-1/2 glassmorphism px-3 py-2 rounded-2xl flex items-center gap-2 shadow-2xl z-50 transition-all duration-300">
-        <button onclick="switchTab('home')" id="btn-home" class="flex flex-col items-center gap-1 px-5 py-2 rounded-xl text-goldAccent transition-all duration-200 bg-gray-900/80">
+    <nav id="system-dock" class="fixed bottom-0 left-0 right-0 glassmorphism border-t border-gray-800 flex items-center justify-around z-50 shadow-2xl safe-bottom">
+        <button onclick="switchTab('home')" id="btn-home" class="w-full flex flex-col items-center justify-center py-4 text-goldAccent transition-all duration-200 bg-gray-900/40">
             <span class="text-xs font-bold tracking-widest uppercase">Home</span>
         </button>
-        <button onclick="switchTab('add')" id="btn-add" class="flex flex-col items-center gap-1 px-5 py-2 rounded-xl text-silverText transition-all duration-200 hover:text-white">
+        <button onclick="switchTab('add')" id="btn-add" class="w-full flex flex-col items-center justify-center py-4 text-silverText transition-all duration-200 hover:text-white border-x border-gray-900">
             <span class="text-xs font-bold tracking-widest uppercase">Add</span>
         </button>
-        <button onclick="switchTab('edit')" id="btn-edit" class="flex flex-col items-center gap-1 px-5 py-2 rounded-xl text-silverText transition-all duration-200 hover:text-white">
+        <button onclick="switchTab('edit')" id="btn-edit" class="w-full flex flex-col items-center justify-center py-4 text-silverText transition-all duration-200 hover:text-white">
             <span class="text-xs font-bold tracking-widest uppercase">Edit</span>
         </button>
     </nav>
 
     <script>
-        // Security Access Constants
         const AUTH_OVERRIDE_CODE = "5578";
 
-        // Application State State
         let libraryData = JSON.parse(localStorage.getItem('farid_library')) || [];
         let analyticsMetrics = JSON.parse(localStorage.getItem('farid_library_metrics')) || {
             lastReadDate: new Date().toDateString(),
@@ -190,46 +187,42 @@
         let sessionTickerInterval = null;
         let sessionAccumulatedSeconds = 0;
 
-        // Lifecycle Ingestion Trigger
         document.addEventListener('DOMContentLoaded', () => {
             initializeMetricsReset();
             renderDashboard();
             setupNotificationPipeline();
             
-            // Document Event Handlers
             document.getElementById('add-book-form').addEventListener('submit', handleAssetIngestion);
             document.getElementById('edit-book-form').addEventListener('submit', handleAssetMutation);
             document.getElementById('edit-selector').addEventListener('change', loadSelectedAssetToForm);
         });
 
-        // Tab Switching Infrastructure
         function switchTab(targetTab) {
             document.querySelectorAll('.tab-content').forEach(element => element.classList.add('hidden'));
             document.getElementById(`tab-${targetTab}`).classList.remove('hidden');
 
-            // Bottom Nav Dock Styling Toggle
             const navButtons = ['home', 'add', 'edit'];
             navButtons.forEach(btn => {
                 const element = document.getElementById(`btn-${btn}`);
                 if(btn === targetTab) {
-                    element.classList.add('text-goldAccent', 'bg-gray-900/80');
+                    element.classList.add('text-goldAccent', 'bg-gray-900/60');
                     element.classList.remove('text-silverText');
                 } else {
-                    element.classList.remove('text-goldAccent', 'bg-gray-900/80');
+                    element.classList.remove('text-goldAccent', 'bg-gray-900/60');
                     element.classList.add('text-silverText');
                 }
             });
 
-            if (targetTab === 'home' || targetTab === 'add' || targetTab === 'edit') {
-                document.getElementById('system-dock').classList.remove('opacity-0', 'pointer-events-none');
+            if (targetTab === 'reading') {
+                document.getElementById('system-dock').classList.add('hidden');
+            } else {
+                document.getElementById('system-dock').classList.remove('hidden');
             }
 
-            // Sync structural changes across registries
             if(targetTab === 'edit') populateEditDropdown();
             if(targetTab === 'add') renderDeleteRegistry();
         }
 
-        // Daily Analytical Metric Dynamic Checks
         function initializeMetricsReset() {
             const todayStr = new Date().toDateString();
             if (analyticsMetrics.lastReadDate !== todayStr) {
@@ -247,33 +240,32 @@
             localStorage.setItem('farid_library', JSON.stringify(libraryData));
         }
 
-        // Notification Pipeline Subsystem Engine
         function setupNotificationPipeline() {
             if ("Notification" in window) {
                 if (Notification.permission !== "granted" && Notification.permission !== "denied") {
                     Notification.requestPermission();
                 }
             }
-            // Continuous Background Check Polling Infrastructure (Every 1-hour interval evaluation)
             setInterval(() => {
                 initializeMetricsReset();
                 if (analyticsMetrics.dailyMinutesAccumulated < 20) {
                     dispatchNotificationReminder();
                 }
-            }, 3600000); // 1 hour tracking frame
+            }, 3600000); // Hourly validation checks
         }
 
         function dispatchNotificationReminder() {
             if (Notification.permission === "granted") {
-                const pendingMinutes = 20 - Math.floor(analyticsMetrics.dailyMinutesAccumulated);
-                new Notification("Farid Library Alert", {
-                    body: `Executive Review Overdue. Spend at least ${pendingMinutes} more minutes processing documentation assets today.`,
-                    icon: 'https://cdn-icons-png.flaticon.com/512/2232/2232688.png'
-                });
+                const pendingMinutes = Math.max(0, 20 - Math.floor(analyticsMetrics.dailyMinutesAccumulated));
+                if (pendingMinutes > 0) {
+                    new Notification("Farid Library Reminder", {
+                        body: `Target Pending! Spend at least ${pendingMinutes} more minutes processing documentation assets today.`,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/2232/2232688.png'
+                    });
+                }
             }
         }
 
-        // Main Interface Interface Architecture Drawing Logic
         function renderDashboard() {
             initializeMetricsReset();
             
@@ -281,7 +273,6 @@
             const absoluteMinutes = Math.floor(analyticsMetrics.dailyMinutesAccumulated);
             document.getElementById('stat-today-time').innerText = `${absoluteMinutes} mins`;
             
-            // Progress Indicator Matrix Calculation
             const percentageCompletion = Math.min((analyticsMetrics.dailyMinutesAccumulated / 20) * 100, 100);
             document.getElementById('stat-progress-bar').style.width = `${percentageCompletion}%`;
 
@@ -290,15 +281,14 @@
 
             if(analyticsMetrics.dailyMinutesAccumulated >= 20) {
                 statusDot.classList.replace('bg-red-500', 'bg-emerald-500');
-                statusText.innerText = `Target Cleared: ${absoluteMinutes}/20 mins`;
+                statusText.innerText = `Done: ${absoluteMinutes}/20m`;
                 statusText.classList.add('text-emerald-400');
             } else {
                 statusDot.classList.replace('bg-emerald-500', 'bg-red-500');
-                statusText.innerText = `Target Deficit: ${absoluteMinutes}/20 mins`;
+                statusText.innerText = `Target: ${absoluteMinutes}/20m`;
                 statusText.classList.remove('text-emerald-400');
             }
 
-            // Render Shelf Cards Matrix
             const shelf = document.getElementById('book-shelf');
             if(libraryData.length === 0) {
                 shelf.innerHTML = `
@@ -322,18 +312,17 @@
                             <p class="text-xs text-gray-400 line-clamp-2 mb-4 text-justify">${book.description}</p>
                         </div>
                         <div class="pt-3 border-t border-gray-900 flex justify-between items-center mt-auto">
-                            <span class="text-[11px] text-gray-500 truncate max-w-[50%]" title="${trackingPointer}">
+                            <span class="text-[11px] text-gray-500 truncate max-w-[55%]" title="${trackingPointer}">
                                 ⏳ Ptr: ${trackingPointer}
                             </span>
                             <button onclick="initiateReadingSession('${book.id}')" class="bg-gray-800 hover:bg-goldAccent hover:text-slate950 text-white font-bold text-xs tracking-wider uppercase px-4 py-2 rounded-md transition duration-200">
-                                Analyze Asset
+                                Read
                             </button>
                         </div>
                     </div>`;
             }).join('');
         }
 
-        // Asset Creation Handling Mechanism Pipeline
         function handleAssetIngestion(e) {
             e.preventDefault();
             const title = document.getElementById('add-title').value;
@@ -354,21 +343,24 @@
                     author: author,
                     description: description,
                     pdfBlobString: base64DataString,
-                    lastReadPointer: 'Not Started'
+                    lastReadPointer: 'Not Started Yet'
                 };
 
                 libraryData.push(dynamicAssetObject);
                 saveLibrary();
-                renderDashboard();
                 
+                // Trigger Confirmation Notification
+                alert(`Success: "${title}" added to your repository.`);
+                
+                // Clear and switch viewports immediately
                 document.getElementById('add-book-form').reset();
+                renderDashboard();
                 switchTab('home');
             };
 
             systemReader.readAsDataURL(targetFile);
         }
 
-        // Asset Removals Subsystem Integration Area
         function renderDeleteRegistry() {
             const registry = document.getElementById('delete-registry');
             if (libraryData.length === 0) {
@@ -389,10 +381,10 @@
         }
 
         function executeAssetPurge(bookId) {
-            const verificationRequest = prompt("ENTER SYSTEM OVERRIDE SECURITY AUTHENTICATION KEY TO COMPLETE PURGE DIRECTIVE:");
+            const verificationRequest = prompt("ENTER SYSTEM OVERRIDE SECURITY KEY (5578):");
             if (verificationRequest === null) return;
             if (verificationRequest !== AUTH_OVERRIDE_CODE) {
-                alert("ACCESS FORBIDDEN: CRITICAL AUTHENTICATION FAULT DETECTED.");
+                alert("ACCESS DENIED: INVALID CREDENTIALS.");
                 return;
             }
 
@@ -402,11 +394,10 @@
             renderDeleteRegistry();
         }
 
-        // Structural Parameter Mutator Interface Ingestion Matrix
         function populateEditDropdown() {
             const selector = document.getElementById('edit-selector');
             selector.innerHTML = '<option value="">-- Choose Book Profile --</option>' + 
-                libraryData.map(b => `<option value="${b.id}">${b.title} [By: ${b.author}]</option>`).join('');
+                libraryData.map(b => `<option value="${b.id}">${b.title}</option>`).join('');
             document.getElementById('edit-book-form').classList.add('hidden');
         }
 
@@ -435,7 +426,7 @@
             const inputAuthCode = document.getElementById('edit-auth-code').value;
 
             if (inputAuthCode !== AUTH_OVERRIDE_CODE) {
-                alert("ACCESS FORBIDDEN: TRANSACTION SHIELD TERMINATED DUE TO FAULTY RUNTIME CREDENTIALS.");
+                alert("ACCESS DENIED: FAULTY AUTHENTICATION CODE.");
                 return;
             }
 
@@ -453,7 +444,6 @@
             switchTab('home');
         }
 
-        // Document Reader Execution Engine
         function initiateReadingSession(bookId) {
             const activeBook = libraryData.find(b => b.id === bookId);
             if (!activeBook) return;
@@ -464,35 +454,32 @@
             document.getElementById('reading-title').innerText = activeBook.title.toUpperCase();
             document.getElementById('pdf-viewer').src = activeBook.pdfBlobString;
 
-            // Hide Floating Framework Toolbar Dock to achieve total focus separation
-            document.getElementById('system-dock').classList.add('opacity-0', 'pointer-events-none');
             switchTab('reading');
 
-            // Launch Realtime Analytics Session Trackers
             sessionTickerInterval = setInterval(() => {
                 sessionAccumulatedSeconds++;
                 const mins = Math.floor(sessionAccumulatedSeconds / 60).toString().padStart(2, '0');
                 const secs = (sessionAccumulatedSeconds % 60).toString().padStart(2, '0');
-                document.getElementById('session-timer').innerText = `Session Run-Time: ${mins}:${secs}`;
+                document.getElementById('session-timer').innerText = `Session Time: ${mins}:${secs}`;
                 
-                // Realtime increments directly mapping tracking structures
                 analyticsMetrics.dailyMinutesAccumulated += (1 / 60);
                 saveMetrics();
                 
-                // Silent continuous runtime synchronization adjustments
-                if (Math.floor(sessionAccumulatedSeconds) % 10 === 0) {
+                // Track progress data points dynamically every 5 seconds
+                if (sessionAccumulatedSeconds % 5 === 0) {
                     updateRealtimeBookPointer();
                 }
             }, 1000);
         }
 
         function updateRealtimeBookPointer() {
-            const timestampString = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            if (!currentReadingBookId) return;
+            const timestampString = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
             const todayStr = new Date().toLocaleDateString([], {month: 'short', day: 'numeric'});
             
             libraryData = libraryData.map(b => {
                 if(b.id === currentReadingBookId) {
-                    b.lastReadPointer = `${todayStr}, ${timestampString}`;
+                    b.lastReadPointer = `${todayStr} @ ${timestampString}`;
                 }
                 return b;
             });
