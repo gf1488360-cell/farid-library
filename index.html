@@ -10,312 +10,373 @@
             theme: {
                 extend: {
                     colors: {
-                        slate950: '#030712',
-                        navyDark: '#0a192f',
+                        slate950: '#020617',
+                        navyDark: '#0b132b',
                         goldAccent: '#d4af37',
-                        silverText: '#c4c4c4'
+                        silverText: '#94a3b8'
                     }
                 }
             }
         }
     </script>
     <style>
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #030712; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        /* Custom Scrollbar Properties */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; border: 2px solid #020617; }
         ::-webkit-scrollbar-thumb:hover { background: #d4af37; }
-        .glassmorphism {
-            background: rgba(10, 25, 47, 0.85);
+        
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
             backdrop-filter: blur(16px);
-            border: 1px solid rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.08);
+        }
+        .active-glow {
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
         }
     </style>
 </head>
-<body class="bg-slate950 text-gray-100 font-sans min-h-screen pb-28 selection:bg-goldAccent selection:text-slate950">
+<body class="bg-slate950 text-slate-100 font-sans min-h-screen pb-24 selection:bg-goldAccent selection:text-slate950">
 
-    <header class="sticky top-0 z-40 glassmorphism border-b border-gray-800 px-6 py-4 flex justify-between items-center">
+    <div id="toast-container" class="fixed top-6 right-6 z-50 space-y-3 pointer-events-none"></div>
+
+    <header class="sticky top-0 z-40 glass-panel border-b border-slate-800 px-6 py-4 flex justify-between items-center">
         <div>
-            <h1 class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-silverText to-goldAccent">
+            <h1 class="text-xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-goldAccent">
                 FARID LIBRARY
             </h1>
-            <p class="text-[10px] text-goldAccent tracking-widest uppercase font-semibold">Decision & Intelligence Layer</p>
+            <p class="text-[10px] text-goldAccent tracking-widest uppercase font-bold">Decision & Strategy Layer</p>
         </div>
-        <div id="reminder-status" class="text-xs bg-gray-900/90 border border-gray-800 px-3 py-1.5 rounded-full text-silverText flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse" id="status-dot"></span>
-            <span id="status-text">Target: 0 / 20 mins</span>
+        <div id="reminder-status" class="text-xs bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-slate-300 flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" id="status-dot"></span>
+            <span id="status-text" class="font-medium">Target: 0 / 20 mins</span>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 pt-6">
+    <main class="max-w-5xl mx-auto px-4 pt-8">
         
-        <section id="tab-home" class="tab-content space-y-6">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="glassmorphism p-5 rounded-xl flex flex-col justify-between">
-                    <span class="text-xs font-semibold tracking-wider uppercase text-silverText">Total Books</span>
-                    <span class="text-3xl font-bold text-white mt-2" id="stat-total-books">0</span>
+        <section id="tab-home" class="tab-content space-y-8 animate-fade-in">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between shadow-xl">
+                    <span class="text-xs font-bold tracking-wider uppercase text-silverText">Total Repository Inventory</span>
+                    <span class="text-4xl font-extrabold text-white mt-3" id="stat-total-books">0</span>
                 </div>
-                <div class="glassmorphism p-5 rounded-xl flex flex-col justify-between">
-                    <span class="text-xs font-semibold tracking-wider uppercase text-silverText">Today's Reading Time</span>
-                    <span class="text-3xl font-bold text-goldAccent mt-2" id="stat-today-time">0 mins</span>
+                <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between shadow-xl">
+                    <span class="text-xs font-bold tracking-wider uppercase text-silverText">Daily Processing Run-Time</span>
+                    <span class="text-4xl font-extrabold text-goldAccent mt-3" id="stat-today-time">0 mins</span>
                 </div>
-                <div class="glassmorphism p-5 rounded-xl flex flex-col justify-between">
-                    <span class="text-xs font-semibold tracking-wider uppercase text-silverText">Target Progress</span>
-                    <div class="w-full bg-gray-800 rounded-full h-2.5 mt-4">
-                        <div id="stat-progress-bar" class="bg-gradient-to-r from-goldAccent to-yellow-500 h-2.5 rounded-full" style="width: 0%"></div>
+                <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between shadow-xl">
+                    <span class="text-xs font-bold tracking-wider uppercase text-silverText">Daily Strategy Milestone Completion</span>
+                    <div class="mt-4">
+                        <div class="w-full bg-slate-800 rounded-full h-3">
+                            <div id="stat-progress-bar" class="bg-gradient-to-r from-goldAccent to-amber-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <p id="stat-progress-label" class="text-[11px] text-right text-slate-400 mt-1.5 font-medium">0% Done</p>
                     </div>
                 </div>
             </div>
 
             <div>
-                <h2 class="text-lg font-semibold mb-4 tracking-wide text-white border-l-2 border-goldAccent pl-2">Your Strategic Library</h2>
-                <div id="book-shelf" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <h2 class="text-lg font-bold mb-5 tracking-wide text-white border-l-4 border-goldAccent pl-3">Active Document Vault</h2>
+                <div id="book-shelf" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     </div>
             </div>
         </section>
 
-        <section id="tab-add" class="tab-content hidden space-y-6">
-            <div class="glassmorphism p-6 rounded-xl border border-gray-800">
-                <h2 class="text-lg font-bold tracking-wide text-white mb-4">Ingest New Literary Asset</h2>
-                <form id="add-book-form" class="space-y-4">
+        <section id="tab-add" class="tab-content hidden space-y-8">
+            <div class="glass-panel p-8 rounded-2xl border border-slate-800 shadow-2xl">
+                <h2 class="text-xl font-bold tracking-wide text-white mb-2">Ingest New Knowledge Asset</h2>
+                <p class="text-xs text-silverText mb-6">Process configuration details below to cleanly commit files directly into your persistent application storage architecture.</p>
+                
+                <form id="add-book-form" class="space-y-5">
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-silverText mb-1">Book Title</label>
-                        <input type="text" id="add-title" required class="w-full bg-slate950 border border-gray-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-goldAccent transition">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Book Title / Document Identifier</label>
+                        <input type="text" id="add-title" required autocomplete="off" placeholder="e.g., Blue Ocean Strategy" class="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-goldAccent focus:ring-1 focus:ring-goldAccent transition">
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-silverText mb-1">Author / Writer</label>
-                            <input type="text" id="add-author" required class="w-full bg-slate950 border border-gray-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-goldAccent transition">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Author / Principal Writer</label>
+                            <input type="text" id="add-author" required autocomplete="off" placeholder="W. Chan Kim" class="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-goldAccent focus:ring-1 focus:ring-goldAccent transition">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-silverText mb-1">Upload PDF File</label>
-                            <input type="file" id="add-pdf" accept="application/pdf" required class="w-full bg-slate950 border border-gray-800 rounded-lg px-4 py-2 text-sm text-silverText focus:outline-none focus:border-goldAccent file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-800 file:text-goldAccent hover:file:bg-gray-700 transition">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Document Binary Payload (PDF)</label>
+                            <input type="file" id="add-pdf" accept="application/pdf" required class="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-2 text-sm text-silverText focus:outline-none focus:border-goldAccent file:mr-4 file:py-1.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-goldAccent hover:file:bg-slate-700 transition">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-silverText mb-1">Executive Summary / Description</label>
-                        <textarea id="add-description" rows="3" required class="w-full bg-slate950 border border-gray-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-goldAccent transition"></textarea>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Executive Context Summary / Description Description</label>
+                        <textarea id="add-description" rows="4" required placeholder="Outline core strategic models, purpose, and targeted structural insights..." class="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-goldAccent focus:ring-1 focus:ring-goldAccent transition"></textarea>
                     </div>
-                    <button type="submit" class="w-full bg-gradient-to-r from-yellow-600 to-goldAccent text-slate950 font-bold text-sm uppercase tracking-widest py-3 rounded-lg shadow-lg hover:brightness-110 transition duration-200">
+                    <button type="submit" class="w-full bg-gradient-to-r from-amber-600 to-goldAccent text-slate-950 font-black text-xs uppercase tracking-widest py-4 rounded-xl shadow-xl hover:brightness-110 active:scale-[0.99] transition duration-150">
                         Commit Asset to Vault
                     </button>
                 </form>
             </div>
 
-            <div class="glassmorphism p-6 rounded-xl border border-red-900/20">
-                <h2 class="text-lg font-bold tracking-wide text-red-400 mb-2">Asset Disposal Desk</h2>
-                <p class="text-xs text-silverText mb-4">Requires authorized override validation credentials (<code class="text-goldAccent">5578</code>).</p>
+            <div class="glass-panel p-8 rounded-2xl border border-red-900/20 shadow-xl bg-gradient-to-b from-slate-950 to-red-950/10">
+                <h2 class="text-lg font-bold tracking-wide text-red-400 mb-1">Asset Deletion Registry</h2>
+                <p class="text-xs text-silverText mb-5">Select profile assets to purge from local database storage records. Requires Authorization Credentials (<code class="text-goldAccent">5578</code>).</p>
                 <div id="delete-registry" class="space-y-3">
                     </div>
             </div>
         </section>
 
-        <section id="tab-edit" class="tab-content hidden space-y-6">
-            <div class="glassmorphism p-6 rounded-xl border border-gray-800">
-                <h2 class="text-lg font-bold tracking-wide text-white mb-2">Modify Document Parameters</h2>
-                <p class="text-xs text-silverText mb-4">Select an active repository profile to modify properties. Security clearing code required upon execution.</p>
+        <section id="tab-edit" class="tab-content hidden space-y-8">
+            <div class="glass-panel p-8 rounded-2xl border border-slate-800 shadow-2xl">
+                <h2 class="text-xl font-bold tracking-wide text-white mb-2">Modify Document Parameters</h2>
+                <p class="text-xs text-silverText mb-6">Select a metadata catalog record below to change document definitions, titles, or profiles.</p>
                 
-                <div class="mb-4">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-silverText mb-1">Select Asset to Edit</label>
-                    <select id="edit-selector" class="w-full bg-slate950 border border-gray-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-goldAccent transition">
+                <div class="mb-6">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Select Repository File Asset</label>
+                    <select id="edit-selector" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-goldAccent transition">
                         <option value="">-- Choose Book Profile --</option>
                     </select>
                 </div>
 
-                <form id="edit-book-form" class="space-y-4 hidden">
+                <form id="edit-book-form" class="space-y-5 hidden">
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-silverText mb-1">Updated Title</label>
-                        <input type="text" id="edit-title" required class="w-full bg-slate950 border border-gray-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-goldAccent transition">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Updated Title / Identification Name</label>
+                        <input type="text" id="edit-title" required class="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-goldAccent transition">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-silverText mb-1">Updated Author</label>
-                        <input type="text" id="edit-author" required class="w-full bg-slate950 border border-gray-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-goldAccent transition">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Updated Author Profile Name</label>
+                        <input type="text" id="edit-author" required class="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-goldAccent transition">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-silverText mb-1">Updated Description</label>
-                        <textarea id="edit-description" rows="3" required class="w-full bg-slate950 border border-gray-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-goldAccent transition"></textarea>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Updated Context Description Description</label>
+                        <textarea id="edit-description" rows="4" required class="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-goldAccent transition"></textarea>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-red-400 mb-1">Security Authentication Code</label>
-                        <input type="password" id="edit-auth-code" placeholder="Enter security key to confirm changes" class="w-full bg-slate950 border border-red-900/50 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500 transition">
+                    <div class="pt-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-red-400 mb-1.5">Security Override Verification Code</label>
+                        <input type="password" id="edit-auth-code" placeholder="Enter security validation clear code to mutate records" class="w-full bg-slate-900/50 border border-red-900/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500 transition">
                     </div>
-                    <button type="submit" class="w-full bg-white text-slate950 font-bold text-sm uppercase tracking-widest py-3 rounded-lg shadow-lg hover:bg-gray-200 transition duration-200">
-                        Authorize Structural Mutation
+                    <button type="submit" class="w-full bg-white text-slate-950 font-black text-xs uppercase tracking-widest py-4 rounded-xl shadow-xl hover:bg-slate-200 active:scale-[0.99] transition duration-150">
+                        Authorize Operational Update
                     </button>
                 </form>
             </div>
         </section>
 
-        <section id="tab-reading" class="tab-content hidden space-y-4">
-            <div class="flex justify-between items-center">
-                <button onclick="stopReadingSession()" class="text-xs tracking-widest font-bold text-silverText uppercase bg-gray-900 border border-gray-800 px-4 py-2 rounded-lg hover:border-goldAccent transition">
-                    ← Close Desk
-                </button>
-                <div class="text-right">
-                    <h3 id="reading-title" class="text-sm font-bold text-white truncate max-w-xs">Document Analysis</h3>
-                    <p id="session-timer" class="text-xs text-goldAccent font-mono tracking-wider">Session Run-Time: 00:00</p>
-                </div>
-            </div>
-            <div class="w-full h-[72vh] rounded-xl border border-gray-800 overflow-hidden bg-white">
-                <iframe id="pdf-viewer" class="w-full h-full" src=""></iframe>
-            </div>
-        </section>
-
     </main>
 
-    <nav id="system-dock" class="fixed bottom-0 left-0 right-0 glassmorphism border-t border-gray-800 flex items-center justify-around z-50 shadow-2xl safe-bottom">
-        <button onclick="switchTab('home')" id="btn-home" class="w-full flex flex-col items-center justify-center py-4 text-goldAccent transition-all duration-200 bg-gray-900/40">
-            <span class="text-xs font-bold tracking-widest uppercase">Home</span>
+    <section id="tab-reading" class="tab-content hidden fixed inset-0 z-50 bg-slate-950 flex flex-col animate-fade-in">
+        <header class="bg-slate-900/90 border-b border-slate-800 px-6 py-4 flex justify-between items-center shadow-lg shrink-0">
+            <button onclick="stopReadingSession()" class="text-[11px] tracking-widest font-black text-slate-300 uppercase bg-slate-950 border border-slate-800 px-5 py-2.5 rounded-lg hover:border-goldAccent transition">
+                ← Close Strategy Workspace
+            </button>
+            <div class="text-right">
+                <h3 id="reading-title" class="text-sm font-black tracking-wide text-white truncate max-w-xs md:max-w-md">ANALYZING ASSET</h3>
+                <p id="session-timer" class="text-xs text-goldAccent font-mono mt-0.5 tracking-wider font-bold">Session Elapsed: 00:00</p>
+            </div>
+        </header>
+        <div class="grow w-full h-full bg-slate-900 relative">
+            <iframe id="pdf-viewer" class="w-full h-full border-none shadow-inner" src="" type="application/pdf"></iframe>
+        </div>
+    </section>
+
+    <nav id="system-dock" class="fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-800 flex items-center justify-around z-40 shadow-2xl">
+        <button onclick="switchTab('home')" id="btn-home" class="w-full flex flex-col items-center justify-center py-4 text-goldAccent transition-all duration-150 bg-slate-900/50">
+            <span class="text-xs font-black tracking-widest uppercase">Home</span>
         </button>
-        <button onclick="switchTab('add')" id="btn-add" class="w-full flex flex-col items-center justify-center py-4 text-silverText transition-all duration-200 hover:text-white border-x border-gray-900">
-            <span class="text-xs font-bold tracking-widest uppercase">Add</span>
+        <button onclick="switchTab('add')" id="btn-add" class="w-full flex flex-col items-center justify-center py-4 text-silverText transition-all duration-150 hover:text-white border-x border-slate-900">
+            <span class="text-xs font-black tracking-widest uppercase">Add</span>
         </button>
-        <button onclick="switchTab('edit')" id="btn-edit" class="w-full flex flex-col items-center justify-center py-4 text-silverText transition-all duration-200 hover:text-white">
-            <span class="text-xs font-bold tracking-widest uppercase">Edit</span>
+        <button onclick="switchTab('edit')" id="btn-edit" class="w-full flex flex-col items-center justify-center py-4 text-silverText transition-all duration-150 hover:text-white">
+            <span class="text-xs font-black tracking-widest uppercase">Edit</span>
         </button>
     </nav>
 
     <script>
-        const AUTH_OVERRIDE_CODE = "5578";
+        // Constants Declarations
+        const AUTHORIZATION_CODE = "5578";
+        const DATABASE_NAME = "FaridLibraryDB";
+        const DATABASE_VERSION = 1;
+        const STORE_NAME = "DocumentAssetsVault";
 
-        let libraryData = JSON.parse(localStorage.getItem('farid_library')) || [];
-        let analyticsMetrics = JSON.parse(localStorage.getItem('farid_library_metrics')) || {
-            lastReadDate: new Date().toDateString(),
-            dailyMinutesAccumulated: 0
+        // Memory Space Pointers
+        let dbInstance = null;
+        let internalLibraryCache = [];
+        let timeTrackingMetrics = JSON.parse(localStorage.getItem('farid_lib_tracker_metrics')) || {
+            currentDateString: new Date().toDateString(),
+            minutesReadToday: 0
         };
-        
-        let currentReadingBookId = null;
-        let sessionTickerInterval = null;
-        let sessionAccumulatedSeconds = 0;
 
+        let currentActiveSessionBookId = null;
+        let globalTickTimerReference = null;
+        let liveSecondsCounter = 0;
+
+        // Startup System Lifecycle Ingestion
         document.addEventListener('DOMContentLoaded', () => {
-            initializeMetricsReset();
-            renderDashboard();
-            setupNotificationPipeline();
-            
-            document.getElementById('add-book-form').addEventListener('submit', handleAssetIngestion);
-            document.getElementById('edit-book-form').addEventListener('submit', handleAssetMutation);
-            document.getElementById('edit-selector').addEventListener('change', loadSelectedAssetToForm);
+            initializeIndexedDBSecureVault();
+            verifyTimeTrackingReset();
+            setupSystemNotifications();
         });
 
+        // Initialize Native IndexedDB Architecture for Massive Document Objects (Safe storage > 1GB)
+        function initializeIndexedDBSecureVault() {
+            const openDatabaseRequest = indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
+
+            openDatabaseRequest.onupgradeneeded = function(event) {
+                const schemaReference = event.target.result;
+                if (!schemaReference.objectStoreNames.contains(STORE_NAME)) {
+                    schemaReference.createObjectStore(STORE_NAME, { keyPath: "id" });
+                }
+            };
+
+            openDatabaseRequest.onsuccess = function(event) {
+                dbInstance = event.target.result;
+                pushSystemMessage("Database Layer Engine Initialized Successfully.", "info");
+                syncCacheAndRefreshDashboard();
+            };
+
+            openDatabaseRequest.onerror = function() {
+                pushSystemMessage("Critical Engine Fault: IndexedDB Initialization Denied.", "error");
+            };
+        }
+
+        // Internal State Engine Sync Routing Pipeline
+        function syncCacheAndRefreshDashboard() {
+            if (!dbInstance) return;
+
+            const transaction = dbInstance.transaction([STORE_NAME], "readonly");
+            const dataStorageStore = transaction.objectStore(STORE_NAME);
+            const getAllQueryRequest = dataStorageStore.getAll();
+
+            getAllQueryRequest.onsuccess = function(event) {
+                internalLibraryCache = event.target.result || [];
+                renderUIMetricalComponents();
+            };
+            getAllQueryRequest.onerror = function() {
+                pushSystemMessage("Error pulling library files from system vault.", "error");
+            };
+        }
+
+        // Daily Time Tracking Assessment Matrix Tracker
+        function verifyTimeTrackingReset() {
+            const actualDateStr = new Date().toDateString();
+            if (timeTrackingMetrics.currentDateString !== actualDateStr) {
+                timeTrackingMetrics.currentDateString = actualDateStr;
+                timeTrackingMetrics.minutesReadToday = 0;
+                persistMetricsToLocalStorage();
+            }
+        }
+
+        function persistMetricsToLocalStorage() {
+            localStorage.setItem('farid_lib_tracker_metrics', JSON.stringify(timeTrackingMetrics));
+        }
+
+        // Tab Viewport Navigation Switching Routing Layer
         function switchTab(targetTab) {
-            document.querySelectorAll('.tab-content').forEach(element => element.classList.add('hidden'));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`tab-${targetTab}`).classList.remove('hidden');
 
-            const navButtons = ['home', 'add', 'edit'];
-            navButtons.forEach(btn => {
+            const tabNavigationButtons = ['home', 'add', 'edit'];
+            tabNavigationButtons.forEach(btn => {
                 const element = document.getElementById(`btn-${btn}`);
-                if(btn === targetTab) {
-                    element.classList.add('text-goldAccent', 'bg-gray-900/60');
+                if (btn === targetTab) {
+                    element.classList.add('text-goldAccent', 'bg-slate-900/60');
                     element.classList.remove('text-silverText');
                 } else {
-                    element.classList.remove('text-goldAccent', 'bg-gray-900/60');
+                    element.classList.remove('text-goldAccent', 'bg-slate-900/60');
                     element.classList.add('text-silverText');
                 }
             });
 
+            // Context Layout Structural Handling
             if (targetTab === 'reading') {
                 document.getElementById('system-dock').classList.add('hidden');
             } else {
                 document.getElementById('system-dock').classList.remove('hidden');
+                verifyTimeTrackingReset();
+                renderUIMetricalComponents();
             }
 
-            if(targetTab === 'edit') populateEditDropdown();
-            if(targetTab === 'add') renderDeleteRegistry();
+            if (targetTab === 'edit') populateEditSelectionList();
+            if (targetTab === 'add') renderDestructivePurgeManifest();
         }
 
-        function initializeMetricsReset() {
-            const todayStr = new Date().toDateString();
-            if (analyticsMetrics.lastReadDate !== todayStr) {
-                analyticsMetrics.lastReadDate = todayStr;
-                analyticsMetrics.dailyMinutesAccumulated = 0;
-                saveMetrics();
-            }
-        }
-
-        function saveMetrics() {
-            localStorage.setItem('farid_library_metrics', JSON.stringify(analyticsMetrics));
-        }
-
-        function saveLibrary() {
-            localStorage.setItem('farid_library', JSON.stringify(libraryData));
-        }
-
-        function setupNotificationPipeline() {
-            if ("Notification" in window) {
-                if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-                    Notification.requestPermission();
-                }
-            }
-            setInterval(() => {
-                initializeMetricsReset();
-                if (analyticsMetrics.dailyMinutesAccumulated < 20) {
-                    dispatchNotificationReminder();
-                }
-            }, 3600000); // Hourly validation checks
-        }
-
-        function dispatchNotificationReminder() {
-            if (Notification.permission === "granted") {
-                const pendingMinutes = Math.max(0, 20 - Math.floor(analyticsMetrics.dailyMinutesAccumulated));
-                if (pendingMinutes > 0) {
-                    new Notification("Farid Library Reminder", {
-                        body: `Target Pending! Spend at least ${pendingMinutes} more minutes processing documentation assets today.`,
-                        icon: 'https://cdn-icons-png.flaticon.com/512/2232/2232688.png'
-                    });
-                }
-            }
-        }
-
-        function renderDashboard() {
-            initializeMetricsReset();
+        // System Messaging Toast Alert Sub-framework Engine
+        function pushSystemMessage(messageText, messageType = "info") {
+            const container = document.getElementById('toast-container');
+            const toastFrame = document.createElement('div');
             
-            document.getElementById('stat-total-books').innerText = libraryData.length;
-            const absoluteMinutes = Math.floor(analyticsMetrics.dailyMinutesAccumulated);
-            document.getElementById('stat-today-time').innerText = `${absoluteMinutes} mins`;
+            toastFrame.className = `p-4 rounded-xl text-xs font-bold tracking-wide shadow-2xl border transition-all duration-300 transform translate-x-20 opacity-0 pointer-events-auto flex items-center justify-between min-w-[280px] `;
             
-            const percentageCompletion = Math.min((analyticsMetrics.dailyMinutesAccumulated / 20) * 100, 100);
-            document.getElementById('stat-progress-bar').style.width = `${percentageCompletion}%`;
+            if (messageType === "success") {
+                toastFrame.className += " bg-emerald-950/95 text-emerald-300 border-emerald-500/30";
+            } else if (messageType === "error") {
+                toastFrame.className += " bg-red-950/95 text-red-300 border-red-500/30";
+            } else {
+                toastFrame.className += " bg-slate-900/95 text-slate-300 border-slate-700/50";
+            }
+
+            toastFrame.innerHTML = `<span>${messageText}</span>`;
+            container.appendChild(toastFrame);
+
+            // Refined Animations execution triggers
+            setTimeout(() => {
+                toastFrame.classList.remove('translate-x-20', 'opacity-0');
+            }, 50);
+
+            setTimeout(() => {
+                toastFrame.classList.add('opacity-0', 'translate-x-10');
+                setTimeout(() => toastFrame.remove(), 300);
+            }, 4000);
+        }
+
+        // Layout Rendering Engine Mapping Layer
+        function renderUIMetricalComponents() {
+            verifyTimeTrackingReset();
+
+            document.getElementById('stat-total-books').innerText = internalLibraryCache.length;
+            const runtimeMinutesComputed = Math.floor(timeTrackingMetrics.minutesReadToday);
+            document.getElementById('stat-today-time').innerText = `${runtimeMinutesComputed} mins`;
+
+            const completionRatio = Math.min((timeTrackingMetrics.minutesReadToday / 20) * 100, 100);
+            document.getElementById('stat-progress-bar').style.width = `${completionRatio}%`;
+            document.getElementById('stat-progress-label').innerText = `${Math.floor(completionRatio)}% Completed`;
 
             const statusDot = document.getElementById('status-dot');
             const statusText = document.getElementById('status-text');
 
-            if(analyticsMetrics.dailyMinutesAccumulated >= 20) {
-                statusDot.classList.replace('bg-red-500', 'bg-emerald-500');
-                statusText.innerText = `Done: ${absoluteMinutes}/20m`;
-                statusText.classList.add('text-emerald-400');
+            if (timeTrackingMetrics.minutesReadToday >= 20) {
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)] animate-none";
+                statusText.innerText = `Cleared: ${runtimeMinutesComputed}/20m`;
+                statusText.className = "font-bold text-emerald-400";
             } else {
-                statusDot.classList.replace('bg-emerald-500', 'bg-red-500');
-                statusText.innerText = `Target: ${absoluteMinutes}/20m`;
-                statusText.classList.remove('text-emerald-400');
+                statusDot.className = "w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse";
+                statusText.innerText = `Target: ${runtimeMinutesComputed}/20m`;
+                statusText.className = "font-medium text-slate-300";
             }
 
-            const shelf = document.getElementById('book-shelf');
-            if(libraryData.length === 0) {
-                shelf.innerHTML = `
-                    <div class="col-span-full py-12 flex flex-col items-center text-center border border-dashed border-gray-800 rounded-xl">
-                        <p class="text-sm text-silverText">No active document repositories allocated.</p>
-                        <button onclick="switchTab('add')" class="text-xs text-goldAccent mt-2 underline tracking-wider font-semibold">Initialize First Ingestion</button>
+            // Draw Book Vault Components UI
+            const vaultShelfGrid = document.getElementById('book-shelf');
+            if (internalLibraryCache.length === 0) {
+                vaultShelfGrid.innerHTML = `
+                    <div class="col-span-full py-16 flex flex-col items-center justify-center text-center border-2 border-dashed border-slate-800 rounded-2xl bg-slate-900/20">
+                        <p class="text-sm text-silverText font-medium">No system repository profiles loaded inside storage partition.</p>
+                        <button onclick="switchTab('add')" class="text-xs text-goldAccent mt-3 font-black underline tracking-widest uppercase hover:text-white transition">Initialize Asset Ingestion</button>
                     </div>`;
                 return;
             }
 
-            shelf.innerHTML = libraryData.map(book => {
-                const trackingPointer = book.lastReadPointer || "Uninitiated Status";
+            vaultShelfGrid.innerHTML = internalLibraryCache.map(book => {
+                const trackingPointerStr = book.lastReadPointer || "Never Processed Yet";
                 return `
-                    <div class="glassmorphism p-5 rounded-xl border border-gray-800 flex flex-col justify-between hover:border-goldAccent/40 transition duration-300">
+                    <div class="glass-panel p-6 rounded-2xl border border-slate-800/80 flex flex-col justify-between hover:border-goldAccent/30 hover:active-glow transition-all duration-300">
                         <div>
-                            <div class="flex justify-between items-start gap-2">
-                                <h3 class="text-base font-bold text-white tracking-wide truncate max-w-[80%]">${book.title}</h3>
-                                <span class="text-[10px] bg-gray-800 px-2 py-0.5 rounded text-goldAccent border border-goldAccent/10 font-mono">PDF Loaded</span>
+                            <div class="flex justify-between items-start gap-3 mb-2">
+                                <h3 class="text-base font-black text-white tracking-wide truncate max-w-[75%]" title="${book.title}">${book.title}</h3>
+                                <span class="text-[9px] font-mono tracking-wider bg-slate-900 px-2.5 py-1 rounded-md text-goldAccent font-bold border border-goldAccent/10 uppercase shrink-0">Storage: Safe</span>
                             </div>
-                            <p class="text-xs text-silverText font-medium mb-2">${book.author}</p>
-                            <p class="text-xs text-gray-400 line-clamp-2 mb-4 text-justify">${book.description}</p>
+                            <p class="text-xs text-slate-400 font-semibold mb-3 truncate">${book.author}</p>
+                            <p class="text-xs text-slate-500 line-clamp-3 mb-5 text-justify leading-relaxed">${book.description}</p>
                         </div>
-                        <div class="pt-3 border-t border-gray-900 flex justify-between items-center mt-auto">
-                            <span class="text-[11px] text-gray-500 truncate max-w-[55%]" title="${trackingPointer}">
-                                ⏳ Ptr: ${trackingPointer}
+                        <div class="pt-4 border-t border-slate-900 flex justify-between items-center mt-auto">
+                            <span class="text-[10px] text-slate-500 font-medium truncate max-w-[55%]" title="Last Access Record: ${trackingPointerStr}">
+                                ⏳ ${trackingPointerStr}
                             </span>
-                            <button onclick="initiateReadingSession('${book.id}')" class="bg-gray-800 hover:bg-goldAccent hover:text-slate950 text-white font-bold text-xs tracking-wider uppercase px-4 py-2 rounded-md transition duration-200">
+                            <button onclick="launchSecureReadingSession('${book.id}')" class="bg-slate-800 hover:bg-goldAccent hover:text-slate-950 text-white font-extrabold text-xs tracking-widest uppercase px-4 py-2 rounded-lg transition duration-150 shadow-md">
                                 Read
                             </button>
                         </div>
@@ -323,178 +384,274 @@
             }).join('');
         }
 
-        function handleAssetIngestion(e) {
-            e.preventDefault();
-            const title = document.getElementById('add-title').value;
-            const author = document.getElementById('add-author').value;
-            const description = document.getElementById('add-description').value;
-            const fileInput = document.getElementById('add-pdf');
+        // Base Binary Binary System Ingestion Infrastructure
+        function handleAssetIngestion(event) {
+            event.preventDefault();
+            
+            const titleValue = document.getElementById('add-title').value.trim();
+            const authorValue = document.getElementById('add-author').value.trim();
+            const descriptionValue = document.getElementById('add-description').value.trim();
+            const documentFileInput = document.getElementById('add-pdf');
 
-            if (fileInput.files.length === 0) return;
-
-            const targetFile = fileInput.files[0];
-            const systemReader = new FileReader();
-
-            systemReader.onload = function(event) {
-                const base64DataString = event.target.result;
-                const dynamicAssetObject = {
-                    id: 'asset_' + Date.now(),
-                    title: title,
-                    author: author,
-                    description: description,
-                    pdfBlobString: base64DataString,
-                    lastReadPointer: 'Not Started Yet'
-                };
-
-                libraryData.push(dynamicAssetObject);
-                saveLibrary();
-                
-                // Trigger Confirmation Notification
-                alert(`Success: "${title}" added to your repository.`);
-                
-                // Clear and switch viewports immediately
-                document.getElementById('add-book-form').reset();
-                renderDashboard();
-                switchTab('home');
-            };
-
-            systemReader.readAsDataURL(targetFile);
-        }
-
-        function renderDeleteRegistry() {
-            const registry = document.getElementById('delete-registry');
-            if (libraryData.length === 0) {
-                registry.innerHTML = `<p class="text-xs text-gray-500 italic">No assets inside local registry vault.</p>`;
+            if (documentFileInput.files.length === 0) {
+                pushSystemMessage("Operational Error: Missing targeted document payload upload.", "error");
                 return;
             }
-            registry.innerHTML = libraryData.map(book => `
-                <div class="flex justify-between items-center bg-slate950 p-3 rounded-lg border border-gray-900">
+
+            const rawTargetFile = documentFileInput.files[0];
+            
+            // Native File Processing Engine Stream Integration
+            const targetFileReader = new FileReader();
+            
+            targetFileReader.onload = function(e) {
+                const objectDataUrlString = e.target.result;
+
+                const libraryAssetSchemaObject = {
+                    id: 'asset_hash_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+                    title: titleValue,
+                    author: authorValue,
+                    description: descriptionValue,
+                    pdfDataPayload: objectDataUrlString,
+                    lastReadPointer: "Uninitiated Status"
+                };
+
+                // Open Transaction Mutation to DB
+                const writeTransaction = dbInstance.transaction([STORE_NAME], "readwrite");
+                const vaultObjectStore = writeTransaction.objectStore(STORE_NAME);
+                const executionWriteQuery = vaultObjectStore.add(libraryAssetSchemaObject);
+
+                executionWriteQuery.onsuccess = function() {
+                    pushSystemMessage(`Asset Ingest Clean: "${titleValue}" loaded into local library vault.`, "success");
+                    
+                    document.getElementById('add-book-form').reset();
+                    
+                    // Instant Synchronous Refresh Pipeline
+                    syncCacheAndRefreshDashboard();
+                    
+                    setTimeout(() => {
+                        switchTab('home');
+                    }, 400);
+                };
+
+                executionWriteQuery.onerror = function() {
+                    pushSystemMessage("Write Failure: Transaction blocked by database engine constraints.", "error");
+                };
+            };
+
+            targetFileReader.onerror = function() {
+                pushSystemMessage("Data Stream Read Error: Failed parsing binary document layers safely.", "error");
+            };
+
+            targetFileReader.readAsDataURL(rawTargetFile);
+        }
+
+        // Structural Parameter Asset Mutation System Section
+        function populateEditSelectionList() {
+            const dropdownSelector = document.getElementById('edit-selector');
+            dropdownSelector.innerHTML = '<option value="">-- Choose Book Profile --</option>' + 
+                internalLibraryCache.map(book => `<option value="${book.id}">${book.title}</option>`).join('');
+            document.getElementById('edit-book-form').classList.add('hidden');
+        }
+
+        document.getElementById('edit-selector').addEventListener('change', function() {
+            const targetIdSelection = this.value;
+            const dynamicEditForm = document.getElementById('edit-book-form');
+
+            if (!targetIdSelection) {
+                dynamicEditForm.classList.add('hidden');
+                return;
+            }
+
+            const assetFound = internalLibraryCache.find(item => item.id === targetIdSelection);
+            if (assetFound) {
+                document.getElementById('edit-title').value = assetFound.title;
+                document.getElementById('edit-author').value = assetFound.author;
+                document.getElementById('edit-description').value = assetFound.description;
+                document.getElementById('edit-auth-code').value = "";
+                dynamicEditForm.classList.remove('hidden');
+            }
+        });
+
+        function handleAssetMutation(event) {
+            event.preventDefault();
+
+            const targetSelectionId = document.getElementById('edit-selector').value;
+            const inputVerificationCode = document.getElementById('edit-auth-code').value;
+
+            if (inputVerificationCode !== AUTHORIZATION_CODE) {
+                pushSystemMessage("Access Forbidden: Faulty System Security Clearing Credentials.", "error");
+                return;
+            }
+
+            const transaction = dbInstance.transaction([STORE_NAME], "readwrite");
+            const vaultStore = transaction.objectStore(STORE_NAME);
+            
+            // Pull existing record target matching item
+            const fetchActiveQuery = vaultStore.get(targetSelectionId);
+
+            fetchActiveQuery.onsuccess = function(e) {
+                const originalObjectRecord = e.target.result;
+                
+                originalObjectRecord.title = document.getElementById('edit-title').value.trim();
+                originalObjectRecord.author = document.getElementById('edit-author').value.trim();
+                originalObjectRecord.description = document.getElementById('edit-description').value.trim();
+
+                const updatingQueryExecution = vaultStore.put(originalObjectRecord);
+                
+                updatingQueryExecution.onsuccess = function() {
+                    pushSystemMessage("Asset structural configurations updated systematically.", "success");
+                    syncCacheAndRefreshDashboard();
+                    switchTab('home');
+                };
+            };
+        }
+
+        // Destructive Asset Deletion Pipeline Area
+        function renderDestructivePurgeManifest() {
+            const deletionRegistryElement = document.getElementById('delete-registry');
+            if (internalLibraryCache.length === 0) {
+                deletionRegistryElement.innerHTML = `<p class="text-xs text-slate-500 italic font-medium">No clear database assets verified inside system manifest entries.</p>`;
+                return;
+            }
+
+            deletionRegistryElement.innerHTML = internalLibraryCache.map(book => `
+                <div class="flex justify-between items-center bg-slate-900/60 p-4 rounded-xl border border-slate-800">
                     <div class="truncate max-w-[70%]">
-                        <p class="text-xs font-bold text-white truncate">${book.title}</p>
-                        <p class="text-[10px] text-gray-500 truncate">${book.author}</p>
+                        <p class="text-xs font-black text-white truncate">${book.title}</p>
+                        <p class="text-[10px] text-slate-400 font-medium truncate mt-0.5">${book.author}</p>
                     </div>
-                    <button onclick="executeAssetPurge('${book.id}')" class="bg-red-950/40 hover:bg-red-900 border border-red-900 text-red-200 text-xs font-mono tracking-widest uppercase px-3 py-1.5 rounded transition">
+                    <button onclick="executeVaultAssetPurge('${book.id}', '${book.title.replace(/'/g, "\\'")}')" class="bg-red-950/40 hover:bg-red-900 border border-red-900/40 text-red-200 text-[10px] font-mono tracking-widest uppercase px-4 py-2 rounded-lg transition duration-150 font-bold shrink-0">
                         PURGE
                     </button>
                 </div>
             `).join('');
         }
 
-        function executeAssetPurge(bookId) {
-            const verificationRequest = prompt("ENTER SYSTEM OVERRIDE SECURITY KEY (5578):");
-            if (verificationRequest === null) return;
-            if (verificationRequest !== AUTH_OVERRIDE_CODE) {
-                alert("ACCESS DENIED: INVALID CREDENTIALS.");
-                return;
-            }
-
-            libraryData = libraryData.filter(b => b.id !== bookId);
-            saveLibrary();
-            renderDashboard();
-            renderDeleteRegistry();
-        }
-
-        function populateEditDropdown() {
-            const selector = document.getElementById('edit-selector');
-            selector.innerHTML = '<option value="">-- Choose Book Profile --</option>' + 
-                libraryData.map(b => `<option value="${b.id}">${b.title}</option>`).join('');
-            document.getElementById('edit-book-form').classList.add('hidden');
-        }
-
-        function loadSelectedAssetToForm() {
-            const selectionId = document.getElementById('edit-selector').value;
-            const mutationForm = document.getElementById('edit-book-form');
+        function executeVaultAssetPurge(bookId, bookTitle) {
+            const trackingVerificationRequest = prompt(`Type security credential key code to explicitly purge "${bookTitle}":`);
+            if (trackingVerificationRequest === null) return;
             
-            if(!selectionId) {
-                mutationForm.classList.add('hidden');
+            if (trackingVerificationRequest !== AUTHORIZATION_CODE) {
+                pushSystemMessage("Purge Interrupted: Authentication credential verification validation failed.", "error");
                 return;
             }
 
-            const activeTargetAsset = libraryData.find(b => b.id === selectionId);
-            if(activeTargetAsset) {
-                document.getElementById('edit-title').value = activeTargetAsset.title;
-                document.getElementById('edit-author').value = activeTargetAsset.author;
-                document.getElementById('edit-description').value = activeTargetAsset.description;
-                document.getElementById('edit-auth-code').value = '';
-                mutationForm.classList.remove('hidden');
-            }
+            const writePurgeTransaction = dbInstance.transaction([STORE_NAME], "readwrite");
+            const structuralStoreStore = writePurgeTransaction.objectStore(STORE_NAME);
+            const executionRemovalRequest = structuralStoreStore.delete(bookId);
+
+            executionRemovalRequest.onsuccess = function() {
+                pushSystemMessage("Asset record clean purged completely from physical registers.", "success");
+                syncCacheAndRefreshDashboard();
+                renderDestructivePurgeManifest();
+            };
         }
 
-        function handleAssetMutation(e) {
-            e.preventDefault();
-            const selectionId = document.getElementById('edit-selector').value;
-            const inputAuthCode = document.getElementById('edit-auth-code').value;
+        // ========================================================= -->
+        // IMMERSIVE PDF RUN-TIME WORKSPACE MODULE INTERFACE         -->
+        // ========================================================= -->
+        function launchSecureReadingSession(bookId) {
+            if (!dbInstance) return;
 
-            if (inputAuthCode !== AUTH_OVERRIDE_CODE) {
-                alert("ACCESS DENIED: FAULTY AUTHENTICATION CODE.");
-                return;
-            }
+            const readTransaction = dbInstance.transaction([STORE_NAME], "readonly");
+            const objectVaultStore = readTransaction.objectStore(STORE_NAME);
+            const dataRetrieveQuery = objectVaultStore.get(bookId);
 
-            libraryData = libraryData.map(book => {
-                if(book.id === selectionId) {
-                    book.title = document.getElementById('edit-title').value;
-                    book.author = document.getElementById('edit-author').value;
-                    book.description = document.getElementById('edit-description').value;
-                }
-                return book;
-            });
+            dataRetrieveQuery.onsuccess = function(event) {
+                const assetResultRecord = event.target.result;
+                if (!assetResultRecord) return;
 
-            saveLibrary();
-            renderDashboard();
-            switchTab('home');
-        }
+                currentActiveSessionBookId = bookId;
+                liveSecondsCounter = 0;
 
-        function initiateReadingSession(bookId) {
-            const activeBook = libraryData.find(b => b.id === bookId);
-            if (!activeBook) return;
-
-            currentReadingBookId = bookId;
-            sessionAccumulatedSeconds = 0;
-
-            document.getElementById('reading-title').innerText = activeBook.title.toUpperCase();
-            document.getElementById('pdf-viewer').src = activeBook.pdfBlobString;
-
-            switchTab('reading');
-
-            sessionTickerInterval = setInterval(() => {
-                sessionAccumulatedSeconds++;
-                const mins = Math.floor(sessionAccumulatedSeconds / 60).toString().padStart(2, '0');
-                const secs = (sessionAccumulatedSeconds % 60).toString().padStart(2, '0');
-                document.getElementById('session-timer').innerText = `Session Time: ${mins}:${secs}`;
+                document.getElementById('reading-title').innerText = assetResultRecord.title.toUpperCase();
                 
-                analyticsMetrics.dailyMinutesAccumulated += (1 / 60);
-                saveMetrics();
-                
-                // Track progress data points dynamically every 5 seconds
-                if (sessionAccumulatedSeconds % 5 === 0) {
-                    updateRealtimeBookPointer();
-                }
-            }, 1000);
+                // Inject massive document payload data clean inside sandbox execution element
+                document.getElementById('pdf-viewer').src = assetResultRecord.pdfDataPayload;
+
+                switchTab('reading');
+                pushSystemMessage(`Session initialized for processing: ${assetResultRecord.title}`, "info");
+
+                // Start Session High-Frequency Clock Tickers
+                globalTickTimerReference = setInterval(() => {
+                    liveSecondsCounter++;
+                    
+                    const renderingMinutes = Math.floor(liveSecondsCounter / 60).toString().padStart(2, '0');
+                    const renderingSeconds = (liveSecondsCounter % 60).toString().padStart(2, '0');
+                    document.getElementById('session-timer').innerText = `Session Elapsed: ${renderingMinutes}:${renderingSeconds}`;
+
+                    // Write incremental metrics directly live to memory space cache
+                    timeTrackingMetrics.minutesReadToday += (1 / 60);
+                    persistMetricsToLocalStorage();
+
+                    // Auto-sync positional location logs seamlessly every 5 seconds
+                    if (liveSecondsCounter % 5 === 0) {
+                        commitLiveReadingHistoryPointer();
+                    }
+                }, 1000);
+            };
         }
 
-        function updateRealtimeBookPointer() {
-            if (!currentReadingBookId) return;
-            const timestampString = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
-            const todayStr = new Date().toLocaleDateString([], {month: 'short', day: 'numeric'});
-            
-            libraryData = libraryData.map(b => {
-                if(b.id === currentReadingBookId) {
-                    b.lastReadPointer = `${todayStr} @ ${timestampString}`;
+        function commitLiveReadingHistoryPointer() {
+            if (!currentActiveSessionBookId || !dbInstance) return;
+
+            const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const monthDayString = new Date().toLocaleDateString([], { month: 'short', day: 'numeric' });
+            const calculatedPointerStamp = `${monthDayString} @ ${timeString}`;
+
+            const updateTransaction = dbInstance.transaction([STORE_NAME], "readwrite");
+            const updateVaultStore = updateTransaction.objectStore(STORE_NAME);
+            const getRecordQuery = updateVaultStore.get(currentActiveSessionBookId);
+
+            getRecordQuery.onsuccess = function(e) {
+                const targetDocRecord = e.target.result;
+                if (targetDocRecord) {
+                    targetDocRecord.lastReadPointer = calculatedPointerStamp;
+                    updateVaultStore.put(targetDocRecord);
                 }
-                return b;
-            });
-            saveLibrary();
+            };
         }
 
         function stopReadingSession() {
-            clearInterval(sessionTickerInterval);
-            updateRealtimeBookPointer();
-            
-            currentReadingBookId = null;
+            clearInterval(globalTickTimerReference);
+            commitLiveReadingHistoryPointer();
+
+            currentActiveSessionBookId = null;
             document.getElementById('pdf-viewer').src = "";
             
-            renderDashboard();
+            pushSystemMessage("Workspace closed. Session progress synced to database registers.", "info");
+            
+            syncCacheAndRefreshDashboard();
             switchTab('home');
+        }
+
+        // Notification Engine Operations
+        function setupSystemNotifications() {
+            if ("Notification" in window) {
+                if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                    Notification.requestPermission();
+                }
+            }
+            
+            // Primary Hourly Interval Checks Polling Infrastructure Loop
+            setInterval(() => {
+                verifyTimeTrackingReset();
+                if (timeTrackingMetrics.minutesReadToday < 20) {
+                    dispatchDesktopTargetAlert();
+                }
+            }, 3600000); // Executed strictly every 1 hour matching criteria definitions
+        }
+
+        function dispatchDesktopTargetAlert() {
+            if (Notification.permission === "granted") {
+                const remainingMinutes = Math.max(0, 20 - Math.floor(timeTrackingMetrics.minutesReadToday));
+                if (remainingMinutes > 0) {
+                    new Notification("Farid Library: Processing Alert", {
+                        body: `Your daily target is incomplete. Spend at least ${remainingMinutes} more minutes reviewing active documentation records today.`,
+                        icon: "https://cdn-icons-png.flaticon.com/512/2232/2232688.png"
+                    });
+                }
+            }
         }
     </script>
 </body>
