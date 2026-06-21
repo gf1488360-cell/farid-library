@@ -534,7 +534,7 @@
             resize: vertical;
         }
         .form-group .file-input-wrapper {
-            position: relative;        /* ← critical fix */
+            position: relative;        /* critical fix */
             padding: 0;
             border: 2px dashed #E2E8F0;
             cursor: pointer;
@@ -554,7 +554,7 @@
         .form-group .file-input-wrapper input[type="file"] {
             position: absolute;
             top: 0;
-            left: 0;                 /* ← critical fix */
+            left: 0;                 /* critical fix */
             width: 100%;
             height: 100%;
             opacity: 0;
@@ -1400,7 +1400,6 @@
                         readingTime: b.readingTime || 0,
                         lastRead: b.lastRead || null,
                         addedDate: b.addedDate || new Date().toISOString(),
-                        // pdfData will be loaded separately
                     }));
                     const today = new Date().toDateString();
                     if (state.stats.lastReadDate !== today) {
@@ -1436,7 +1435,6 @@
 
         function saveData() {
             try {
-                // Save only metadata (no pdfData)
                 const toSave = {
                     books: state.books.map(b => {
                         const { pdfData, ...rest } = b;
@@ -1780,9 +1778,9 @@
         }
 
         // ================================================================
-        //  ADD BOOK (with IndexedDB)
+        //  ADD BOOK (with IndexedDB using FileReader)
         // ================================================================
-        document.getElementById('addBookForm').addEventListener('submit', async function(e) {
+        document.getElementById('addBookForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
             const name = document.getElementById('bookName').value.trim();
@@ -1805,45 +1803,48 @@
                 return;
             }
 
-            // Read file as ArrayBuffer for IndexedDB
-            try {
-                const arrayBuffer = await file.arrayBuffer();
-                const base64 = btoa(
-                    new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-                );
+            const reader = new FileReader();
+            reader.onload = async function(ev) {
+                try {
+                    const base64 = ev.target.result.split(',')[1]; // get base64 part
 
-                const newBook = {
-                    id: generateId(),
-                    name: name,
-                    writer: writer,
-                    description: desc || '',
-                    pdfData: base64, // will be stored in IndexedDB
-                    currentPage: 1,
-                    totalPages: 1,
-                    readingTime: 0,
-                    lastRead: null,
-                    addedDate: new Date().toISOString(),
-                };
+                    const newBook = {
+                        id: generateId(),
+                        name: name,
+                        writer: writer,
+                        description: desc || '',
+                        pdfData: base64,
+                        currentPage: 1,
+                        totalPages: 1,
+                        readingTime: 0,
+                        lastRead: null,
+                        addedDate: new Date().toISOString(),
+                    };
 
-                // Store PDF in IndexedDB
-                await storePDF(newBook.id, base64);
+                    // Store PDF in IndexedDB
+                    await storePDF(newBook.id, base64);
 
-                // Add to state
-                state.books.unshift(newBook);
-                saveData();
-                updateAll();
-                document.getElementById('addBookForm').reset();
-                document.getElementById('fileWrapper').classList.remove('has-file');
-                document.getElementById('fileNameDisplay').textContent = '';
-                document.getElementById('fileLabel').textContent = 'Choose PDF file';
-                showToast('✅ Book "' + name + '" added successfully!', 'success');
+                    // Add to state
+                    state.books.unshift(newBook);
+                    saveData();
+                    updateAll();
+                    document.getElementById('addBookForm').reset();
+                    document.getElementById('fileWrapper').classList.remove('has-file');
+                    document.getElementById('fileNameDisplay').textContent = '';
+                    document.getElementById('fileLabel').textContent = 'Choose PDF file';
+                    showToast('✅ Book "' + name + '" added successfully!', 'success');
 
-                // Try to get page count
-                loadPdfMetadata(newBook.id, base64);
-            } catch (err) {
-                console.error('Add book error', err);
-                showToast('⚠️ Error adding book. Please try again.', 'error');
-            }
+                    // Try to get page count
+                    loadPdfMetadata(newBook.id, base64);
+                } catch (err) {
+                    console.error('Add book error:', err);
+                    showToast('⚠️ Error adding book: ' + err.message, 'error');
+                }
+            };
+            reader.onerror = function(err) {
+                showToast('⚠️ Error reading file: ' + err.message, 'error');
+            };
+            reader.readAsDataURL(file);
         });
 
         // File input label update
@@ -1905,9 +1906,7 @@
             const book = getBook(id);
             if (!book) return;
 
-            // Remove from IndexedDB
             await deletePDF(id);
-
             state.books = state.books.filter(b => b.id !== id);
             if (readingState.bookId === id) {
                 closeReading();
@@ -2008,7 +2007,6 @@
                 return;
             }
 
-            // If pdfData not loaded, try to fetch from IndexedDB
             if (!book.pdfData) {
                 try {
                     const data = await getPDF(id);
