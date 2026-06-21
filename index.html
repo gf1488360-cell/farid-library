@@ -4,105 +4,126 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Executive Intelligence Dashboard</title>
+    <!-- Tailwind CSS for high-contrast light corporate theme styling -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f19; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #ffffff; color: #000000; }
+        /* Custom scrollbar matching navy styling */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="text-slate-200 min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col">
 
-    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sticky top-0 z-50">
+    <!-- Top Navigation Header -->
+    <header class="border-b border-slate-200 bg-slate-50/80 backdrop-blur px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sticky top-0 z-50">
         <div>
-            <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                <span class="text-emerald-400">⚡</span> Executive Intelligence Hub
+            <h1 class="text-xl font-bold tracking-tight text-indigo-950 flex items-center gap-2">
+                <span class="text-indigo-600">⚡</span> Executive Intelligence Hub
             </h1>
-            <p class="text-xs text-slate-400 mt-0.5">6-Month Operational Generalist Curriculum</p>
+            <p class="text-xs text-slate-500 mt-0.5">6-Month Operational Generalist Curriculum</p>
         </div>
-        <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl shadow-inner">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span id="current-timestamp" class="text-xs font-mono font-medium text-slate-300"></span>
+        <div class="flex items-center gap-3 bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+            <span id="current-timestamp" class="text-xs font-mono font-medium text-slate-700"></span>
         </div>
     </header>
 
+    <!-- Main Workspace Dashboard Grid -->
     <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
+        <!-- Left Column: Focus Target Overview & Day Calendar Selector -->
         <section class="lg:col-span-4 flex flex-col gap-6">
-            <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl"></div>
-                <h2 class="text-xs font-bold tracking-widest text-emerald-400 uppercase">Today's Directive</h2>
-                <div id="today-title-display" class="text-2xl font-bold text-white mt-2 tracking-tight"></div>
-                <div id="today-day-display" class="text-sm font-medium text-slate-400 mt-1"></div>
-                <div id="today-desc-display" class="text-sm text-slate-300 mt-4 leading-relaxed border-l-2 border-slate-700 pl-3"></div>
+            <!-- Active Focus Card -->
+            <div class="bg-gradient-to-br from-indigo-50 to-slate-50 border border-indigo-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-600/5 rounded-full blur-3xl"></div>
+                <h2 class="text-xs font-bold tracking-widest text-indigo-700 uppercase">Today's Directive</h2>
+                <div id="today-title-display" class="text-2xl font-bold text-indigo-950 mt-2 tracking-tight"></div>
+                <div id="today-day-display" class="text-sm font-medium text-slate-600 mt-1"></div>
+                <div id="today-desc-display" class="text-sm text-slate-800 mt-4 leading-relaxed border-l-2 border-indigo-400 pl-3"></div>
             </div>
 
-            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 shadow-lg flex-1 flex flex-col">
+            <!-- Calendar Filter Matrix Box -->
+            <div class="bg-slate-50/60 border border-slate-200 rounded-2xl p-5 shadow-sm flex-1 flex flex-col">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-sm font-semibold text-white tracking-wide">Curriculum Matrix</h3>
-                    <select id="topic-selector" class="bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 transition-colors">
-                        </select>
+                    <h3 class="text-sm font-semibold text-indigo-950 tracking-wide">Curriculum Matrix</h3>
+                    <select id="topic-selector" class="bg-white border border-slate-200 text-xs text-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-600 transition-colors shadow-sm">
+                        <!-- Content auto-injected by JS -->
+                    </select>
                 </div>
+                <!-- Mini Grid View Scroll Wrapper -->
                 <div class="flex-1 overflow-y-auto max-h-[380px] lg:max-h-none pr-1 space-y-2" id="matrix-days-list">
-                    </div>
+                    <!-- Day Rows auto-rendered by JS -->
+                </div>
             </div>
         </section>
 
-        <section id="workspace-view" class="lg:col-span-8 bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+        <!-- Right Column: Interactive Task Action Workspace View -->
+        <section id="workspace-view" class="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
             <div class="space-y-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800/80 pb-4 gap-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-4">
                     <div>
                         <div class="flex items-center gap-2">
                             <span id="active-badge" class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md"></span>
-                            <span id="active-index-label" class="text-xs font-mono text-slate-500"></span>
+                            <span id="active-index-label" class="text-xs font-mono text-slate-400"></span>
                         </div>
-                        <h2 id="active-task-title" class="text-2xl font-bold text-white tracking-tight mt-1"></h2>
+                        <h2 id="active-task-title" class="text-2xl font-bold text-indigo-950 tracking-tight mt-1"></h2>
                     </div>
-                    <div id="active-date-tag" class="text-xs font-mono bg-slate-950 border border-slate-800/80 px-3 py-1.5 rounded-lg text-slate-400"></div>
+                    <div id="active-date-tag" class="text-xs font-mono bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-slate-600"></div>
                 </div>
 
+                <!-- Structured Deep Workspace Layout -->
                 <div class="space-y-6">
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Operational Context</h4>
-                        <p id="active-task-desc" class="text-sm text-slate-300 leading-relaxed bg-slate-950/40 p-4 border border-slate-900 rounded-xl"></p>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Operational Context</h4>
+                        <p id="active-task-desc" class="text-sm text-slate-900 leading-relaxed bg-slate-50 p-4 border border-slate-100 rounded-xl"></p>
                     </div>
 
+                    <!-- Explicit Tool Breakdown Area for Tuesday -->
                     <div id="tool-breakdown-section" class="hidden">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2">Core Software Focus</h4>
-                        <div id="tool-badge-display" class="inline-flex items-center gap-2 text-xs font-mono bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl text-white font-semibold"></div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-2">Core Software Focus</h4>
+                        <div id="tool-badge-display" class="inline-flex items-center gap-2 text-xs font-mono bg-indigo-900 border border-indigo-950 px-3 py-1.5 rounded-xl text-white font-semibold shadow-sm"></div>
                     </div>
 
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">ENTJ Execution Plan</h4>
-                        <ul class="text-sm text-slate-300 space-y-2.5 bg-slate-950/20 border border-slate-900 p-4 rounded-xl list-none pl-0" id="execution-plan-points">
-                            </ul>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">ENTJ Execution Plan</h4>
+                        <ul class="text-sm text-slate-900 space-y-2.5 bg-slate-50/50 border border-slate-100 p-4 rounded-xl list-none pl-0" id="execution-plan-points">
+                            <!-- Injected by JS -->
+                        </ul>
                     </div>
 
-                    <div class="border-t border-slate-800/80 pt-4">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Master Executive Tooling Blueprint</h4>
+                    <!-- Generalist Executive Tool Stack Strategy Integration -->
+                    <div class="border-t border-slate-100 pt-4">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Master Executive Tooling Blueprint</h4>
                         <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[11px] font-mono">
-                            <div class="bg-slate-950/60 p-2.5 border border-slate-900 rounded-xl text-center"><span class="text-purple-400 block font-bold mb-1">MIRO</span>Ideation &amp; Strategy Mapping</div>
-                            <div class="bg-slate-950/60 p-2.5 border border-slate-900 rounded-xl text-center"><span class="text-orange-400 block font-bold mb-1">FIGMA</span>UX Blueprint &amp; Interface Audit</div>
-                            <div class="bg-slate-950/60 p-2.5 border border-slate-900 rounded-xl text-center"><span class="text-blue-400 block font-bold mb-1">JIRA</span>Scrum Sprints &amp; Dev Execution</div>
-                            <div class="bg-slate-950/60 p-2.5 border border-slate-900 rounded-xl text-center"><span class="text-slate-400 block font-bold mb-1">NOTION</span>Knowledge Base &amp; OS Wiki</div>
-                            <div class="bg-slate-950/60 p-2.5 border border-slate-900 rounded-xl text-center"><span class="text-yellow-400 block font-bold mb-1">GOOGLE ANALYTICS</span>User Data &amp; Churn Metrics</div>
+                            <div class="bg-slate-50 p-2.5 border border-slate-100 rounded-xl text-center text-slate-800"><span class="text-purple-700 block font-bold mb-1">MIRO</span>Ideation &amp; Architecture</div>
+                            <div class="bg-slate-50 p-2.5 border border-slate-100 rounded-xl text-center text-slate-800"><span class="text-orange-700 block font-bold mb-1">FIGMA</span>UX Layouts &amp; Audits</div>
+                            <div class="bg-slate-50 p-2.5 border border-slate-100 rounded-xl text-center text-slate-800"><span class="text-blue-700 block font-bold mb-1">JIRA</span>Agile Agile Sprint Delivery</div>
+                            <div class="bg-slate-50 p-2.5 border border-slate-100 rounded-xl text-center text-slate-800"><span class="text-slate-700 block font-bold mb-1">NOTION</span>Enterprise Knowledge OS</div>
+                            <div class="bg-slate-50 p-2.5 border border-slate-100 rounded-xl text-center text-slate-800"><span class="text-amber-700 block font-bold mb-1">GA4</span>User Retention Logs</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <footer class="border-t border-slate-800/80 pt-4 mt-8 flex justify-between items-center text-xs text-slate-500">
+            <!-- Dashboard Interaction Footer -->
+            <footer class="border-t border-slate-100 pt-4 mt-8 flex justify-between items-center text-xs text-slate-400">
                 <div>Framework Sandbox Protocol Active</div>
-                <div class="font-mono">T_e Optimization Vector</div>
+                <div class="font-mono">T_e Optimization Vector // Light-Theme</div>
             </footer>
         </section>
 
     </main>
 
+    <!-- App Engine JavaScript Operations Block -->
     <script>
         const curriculum = {
             Monday: {
                 title: "Interpersonal & Executive Presence",
-                color: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+                color: "bg-blue-100 text-blue-800 border-blue-200",
                 topics: [
                     "Active Listening & Pacing", "Vocal Tone & Modulation", "Command of Body Language",
                     "Strategic Storytelling", "High-Impact Pitching", "Handling Executive Objections",
@@ -144,7 +165,7 @@
             },
             Tuesday: {
                 title: "Digital Tools & Analytics",
-                color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+                color: "bg-cyan-100 text-cyan-800 border-cyan-200",
                 tools: [
                     "Miro", "Miro", "Miro", "Miro", "Miro", 
                     "Figma", "Figma", "Figma", "Figma", "Figma", 
@@ -189,7 +210,7 @@
             },
             Wednesday: {
                 title: "Corporate Strategy & Architecture",
-                color: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+                color: "bg-purple-100 text-purple-800 border-purple-200",
                 topics: [
                     "Horizontal Integration", "Vertical Integration", "Corporate Value Chains",
                     "Navigating Professional Failure", "Business Model Innovation", "Market Entry Strategies",
@@ -205,7 +226,7 @@
                     "Expanding business boundaries by acquiring or launching matching products within identical industry horizontal levels.",
                     "Securing complete supply control by absorbing manufacturing steps upstream or capturing customer retail channels downstream.",
                     "Dissecting every functional layer of an enterprise to optimize efficiency, cut cost, and maximize end-value production.",
-                    "Anesthetizing operational breakdowns objectively, extracting systemic fixes, and re-calibrating personal strategy rapidly.",
+                    "Analyzing operational breakdowns objectively, extracting systemic fixes, and re-calibrating personal strategy rapidly.",
                     "Rethinking value capture, distribution infrastructure, monetization metrics, and cost-structure logic to create blue oceans.",
                     "Formulating analytical market expansion blueprints checking regulatory terrain, pricing models, and competitor footing.",
                     "Accelerating company scaling using targeted corporate finance transactions, mergers, and external asset acquisitions.",
@@ -231,7 +252,7 @@
             },
             Thursday: {
                 title: "Core Grounding & Philosophy",
-                color: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                color: "bg-amber-100 text-amber-800 border-amber-200",
                 topics: [
                     "Intentional Self-Mastery", "Emotional Grit & Resilience", "Navigating Professional Failure",
                     "Imposter Syndrome Defense", "Ethical Decision-Making", "Stoic Mental Frameworks",
@@ -273,7 +294,7 @@
             },
             Friday: {
                 title: "Product Management Mechanics",
-                color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                color: "bg-emerald-100 text-emerald-800 border-emerald-200",
                 topics: [
                     "Hook Model Basics", "Internal vs External Triggers", "Friction Reduction (Action)",
                     "Variable Reward Engines", "Stored Value (Investment)", "Customer Lifetime Value (CLTV)",
@@ -315,7 +336,7 @@
             },
             Saturday: {
                 title: "High-Leverage Frameworks",
-                color: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+                color: "bg-rose-100 text-rose-800 border-rose-200",
                 topics: [
                     "MECE Issue Trees", "BCG Growth-Share Matrix", "Porter's Five Forces",
                     "SWOT & TOWS Analysis", "PESTLE Context Analysis", "RICE Prioritization",
@@ -357,7 +378,7 @@
             },
             Sunday: {
                 title: "LinkedIn & Footprint Management",
-                color: "bg-teal-500/10 text-teal-400 border-teal-500/20",
+                color: "bg-teal-100 text-teal-800 border-teal-200",
                 topics: Array(25).fill("Ecosystem Growth & Strategic Networking"),
                 descriptions: Array(25).fill("Execute professional personal branding tasks: Update, clean, and optimize your portfolio website's text assets, compose one high-impact LinkedIn post breaking down a specific tech framework, and perform high-context custom networking messages to 3-5 target corporate mentors and product leaders to scale real alliances.")
             }
@@ -365,13 +386,14 @@
 
         // Date & Metric State Logic (Locked to Year 2026 Sandbox Baseline)
         const currentZoneTime = new Date();
-        const baseYear = 2026;
         const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         const todayDayName = dayNames[currentZoneTime.getDay()];
 
-        // Generate static alignment indexing [0 to 24] mapped across the year
-        const daysSinceStartOfYear = Math.floor((currentZoneTime - new Date(baseYear, 0, 1)) / (1000 * 60 * 60 * 24));
-        const activeTopicIndex = Math.abs(daysSinceStartOfYear % 25); 
+        // WEEKLY ROTATION SYSTEM ENGINE: Treats June 21, 2026 as Week 1 (Block 01)
+        const startOfCurriculum = new Date(2026, 5, 21); // Month index 5 = June
+        const millisecondsInWeek = 1000 * 60 * 60 * 24 * 7;
+        const weeksElapsed = Math.floor((currentZoneTime - startOfCurriculum) / millisecondsInWeek);
+        const activeTopicIndex = Math.abs(weeksElapsed % 25); 
 
         // Live Clock Ticker Object Loop
         function updateTicker() {
@@ -408,19 +430,18 @@
                 
                 row.className = `w-full text-left p-3 rounded-xl border transition-all flex justify-between items-center group cursor-pointer ${
                     isCurrentActiveIndex 
-                    ? 'bg-slate-800 border-emerald-500 text-white font-medium shadow-md' 
-                    : 'bg-slate-950/40 border-slate-900 text-slate-400 hover:bg-slate-900/50 hover:border-slate-800 hover:text-slate-200'
+                    ? 'bg-indigo-50 border-indigo-500 text-indigo-950 font-medium shadow-sm' 
+                    : 'bg-white border-slate-100 text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:text-black'
                 }`;
 
-                // Append special indicator icon if it is a Tuesday tool track
                 const subtext = dayConfig.tools ? dayConfig.tools[idx].toUpperCase() : `Operational Block ${String(idx + 1).padStart(2, '0')}`;
 
                 row.innerHTML = `
                     <div class="flex flex-col gap-0.5 max-w-[85%]">
-                        <span class="text-[9px] font-mono tracking-wider uppercase opacity-60 text-slate-400">${subtext}</span>
-                        <span class="text-xs truncate ${isCurrentActiveIndex ? 'text-emerald-400' : 'text-slate-300 group-hover:text-white'}">${topic.split(': ').pop()}</span>
+                        <span class="text-[9px] font-mono tracking-wider uppercase opacity-60 text-slate-500">${subtext}</span>
+                        <span class="text-xs truncate ${isCurrentActiveIndex ? 'text-indigo-700 font-semibold' : 'text-slate-800 group-hover:text-black'}">${topic.split(': ').pop()}</span>
                     </div>
-                    <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800/80 group-hover:border-slate-700">View</span>
+                    <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-50 border border-slate-200 group-hover:border-slate-300">View</span>
                 `;
 
                 row.onclick = () => loadWorkspace(targetDay, idx);
@@ -432,9 +453,9 @@
         function generateExecutionPoints(dayType, title, toolName) {
             if (dayType === "Sunday") {
                 return `
-                    <li class="flex gap-2.5 items-start"><span class="text-emerald-400 font-mono text-xs mt-0.5">[01]</span> <p class="text-slate-300">Run an interface update on your custom web footprint, optimizing portfolio data rows.</p></li>
-                    <li class="flex gap-2.5 items-start"><span class="text-emerald-400 font-mono text-xs mt-0.5">[02]</span> <p class="text-slate-300">Draft a high-leverage LinkedIn text asset deconstructing an industrial or software corporate case study.</p></li>
-                    <li class="flex gap-2.5 items-start"><span class="text-emerald-400 font-mono text-xs mt-0.5">[03]</span> <p class="text-slate-300">Execute personalized networking signals to 3-5 high-altitude managers to forge operational connections.</p></li>
+                    <li class="flex gap-2.5 items-start"><span class="text-indigo-600 font-mono text-xs mt-0.5">[01]</span> <p class="text-slate-900">Run an interface update on your custom web footprint, optimizing portfolio data rows.</p></li>
+                    <li class="flex gap-2.5 items-start"><span class="text-indigo-600 font-mono text-xs mt-0.5">[02]</span> <p class="text-slate-900">Draft a high-leverage LinkedIn text asset deconstructing an industrial or software corporate case study.</p></li>
+                    <li class="flex gap-2.5 items-start"><span class="text-indigo-600 font-mono text-xs mt-0.5">[03]</span> <p class="text-slate-900">Execute personalized networking signals to 3-5 high-altitude managers to forge operational connections.</p></li>
                 `;
             }
 
@@ -468,8 +489,8 @@
                 };
                 return (toolPlans[toolName] || toolPlans["Miro"]).map((txt, i) => `
                     <li class="flex gap-2.5 items-start">
-                        <span class="text-cyan-400 font-mono text-xs mt-0.5">[0${i+1}]</span>
-                        <p class="text-slate-300">${txt}</p>
+                        <span class="text-indigo-600 font-mono text-xs mt-0.5">[0${i+1}]</span>
+                        <p class="text-slate-900">${txt}</p>
                     </li>
                 `).join('');
             }
@@ -483,8 +504,8 @@
             };
             return (templates[dayType] || templates["Thursday"]).map((txt, i) => `
                 <li class="flex gap-2.5 items-start">
-                    <span class="text-emerald-400 font-mono text-xs mt-0.5">[0${i+1}]</span>
-                    <p class="text-slate-300">${txt.replace('this framework', `the <b>${title}</b> framework`)}</p>
+                    <span class="text-indigo-600 font-mono text-xs mt-0.5">[0${i+1}]</span>
+                    <p class="text-slate-900">${txt.replace('this framework', `the <b>${title}</b> framework`)}</p>
                 </li>
             `).join('');
         }
