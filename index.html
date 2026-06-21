@@ -1295,12 +1295,12 @@
         //  CONFIG
         // ================================================================
         const APP_KEY = 'farid_library_data';
-        const DAILY_GOAL = 20; // minutes
-        const NOTIF_CHECK_INTERVAL = 3600000; // 1 hour
+        const DAILY_GOAL = 20;
+        const NOTIF_CHECK_INTERVAL = 3600000;
         const SECURITY_CODE = '5578';
 
         // ================================================================
-        //  INDEXEDDB STORAGE (no fallback, supports large files)
+        //  INDEXEDDB STORAGE (stores ArrayBuffer, clones on retrieval)
         // ================================================================
         const DB_NAME = 'FaridLibraryDB';
         const STORE_NAME = 'pdfs';
@@ -1308,7 +1308,7 @@
         function openDB() {
             return new Promise((resolve, reject) => {
                 if (!('indexedDB' in window) || window.indexedDB === null) {
-                    reject(new Error('IndexedDB not supported in this browser.'));
+                    reject(new Error('IndexedDB is not supported in this browser.'));
                     return;
                 }
                 const request = indexedDB.open(DB_NAME, 1);
@@ -1323,12 +1323,12 @@
             });
         }
 
-        async function storePDF(id, data) {
+        async function storePDF(id, arrayBuffer) {
             const db = await openDB();
             return new Promise((resolve, reject) => {
                 const tx = db.transaction(STORE_NAME, 'readwrite');
                 const store = tx.objectStore(STORE_NAME);
-                const request = store.put({ id, data });
+                const request = store.put({ id, data: arrayBuffer });
                 request.onsuccess = () => resolve();
                 request.onerror = () => reject(request.error);
                 tx.oncomplete = () => db.close();
@@ -1341,7 +1341,22 @@
                 const tx = db.transaction(STORE_NAME, 'readonly');
                 const store = tx.objectStore(STORE_NAME);
                 const request = store.get(id);
-                request.onsuccess = () => resolve(request.result ? request.result.data : null);
+                request.onsuccess = () => {
+                    const result = request.result;
+                    if (result) {
+                        // Clone the ArrayBuffer to avoid detachment issues
+                        const buffer = result.data;
+                        if (buffer instanceof ArrayBuffer) {
+                            // .slice(0) creates a new, independent ArrayBuffer
+                            const cloned = buffer.slice(0);
+                            resolve(cloned);
+                        } else {
+                            resolve(buffer);
+                        }
+                    } else {
+                        resolve(null);
+                    }
+                };
                 request.onerror = () => reject(request.error);
                 tx.oncomplete = () => db.close();
             });
@@ -1386,7 +1401,7 @@
         let editTargetId = null;
 
         // ================================================================
-        //  DATA MANAGEMENT (metadata in localStorage, PDFs in IndexedDB)
+        //  DATA MANAGEMENT
         // ================================================================
         function loadData() {
             try {
@@ -1418,12 +1433,10 @@
                 console.warn('Data load error, resetting', e);
                 resetData();
             }
-            // After loading metadata, fetch PDFs and attach
             loadAllPDFs().then(() => {
                 updateAll();
             }).catch(err => {
-                console.error('Failed to load PDFs:', err);
-                showToast('⚠️ Could not load PDF data: ' + err.message, 'error');
+                showToast('⚠️ Failed to load PDF data: ' + err.message, 'error');
             });
         }
 
@@ -1460,7 +1473,7 @@
                 try {
                     const data = await getPDF(book.id);
                     if (data) {
-                        book.pdfData = data;
+                        book.pdfData = data; // cloned ArrayBuffer
                     } else {
                         book.pdfData = null;
                     }
@@ -1601,7 +1614,7 @@
         }
 
         // ================================================================
-        //  RENDER: HOME
+        //  RENDER FUNCTIONS
         // ================================================================
         function renderHome() {
             const grid = document.getElementById('homeBookGrid');
@@ -1661,9 +1674,6 @@
           `).join('');
         }
 
-        // ================================================================
-        //  RENDER: STATS
-        // ================================================================
         function renderStats() {
             document.getElementById('statBooks').textContent = state.books.length;
             const todayMin = getTodayMinutes();
@@ -1672,9 +1682,6 @@
             checkDailyGoal();
         }
 
-        // ================================================================
-        //  RENDER: ADD TAB
-        // ================================================================
         function renderAddList() {
             const container = document.getElementById('addBookList');
             const empty = document.getElementById('addEmptyState');
@@ -1707,9 +1714,6 @@
           `).join('');
         }
 
-        // ================================================================
-        //  RENDER: EDIT TAB
-        // ================================================================
         function renderEditList() {
             const container = document.getElementById('editBookList');
             const empty = document.getElementById('editEmptyState');
@@ -1742,9 +1746,6 @@
           `).join('');
         }
 
-        // ================================================================
-        //  RENDER: ALL
-        // ================================================================
         function updateAll() {
             renderStats();
             renderHome();
@@ -1759,7 +1760,7 @@
         }
 
         // ================================================================
-        //  BOOK COLOR
+        //  HELPERS
         // ================================================================
         function getBookColor(id) {
             const colors = [
@@ -1775,9 +1776,6 @@
             return colors[Math.abs(hash)];
         }
 
-        // ================================================================
-        //  ESCAPE HTML
-        // ================================================================
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
@@ -1786,7 +1784,7 @@
         }
 
         // ================================================================
-        //  ADD BOOK (with IndexedDB)
+        //  ADD BOOK (reads as ArrayBuffer)
         // ================================================================
         document.getElementById('addBookForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -1811,18 +1809,17 @@
                 return;
             }
 
-            // Read file as data URL (base64)
             const reader = new FileReader();
             reader.onload = async function(ev) {
                 try {
-                    const base64 = ev.target.result.split(',')[1]; // get base64 part
+                    const arrayBuffer = ev.target.result; // ArrayBuffer
 
                     const newBook = {
                         id: generateId(),
                         name: name,
                         writer: writer,
                         description: desc || '',
-                        pdfData: base64,
+                        pdfData: arrayBuffer, // will be stored separately
                         currentPage: 1,
                         totalPages: 1,
                         readingTime: 0,
@@ -1830,11 +1827,14 @@
                         addedDate: new Date().toISOString(),
                     };
 
-                    // Store PDF in IndexedDB
-                    await storePDF(newBook.id, base64);
+                    // Store in IndexedDB
+                    await storePDF(newBook.id, arrayBuffer);
 
-                    // Add to state
-                    state.books.unshift(newBook);
+                    // Add to state (we don't keep the buffer in state to avoid memory duplication)
+                    state.books.unshift({
+                        ...newBook,
+                        pdfData: null // we will fetch it on reading
+                    });
                     saveData();
                     updateAll();
                     document.getElementById('addBookForm').reset();
@@ -1843,8 +1843,8 @@
                     document.getElementById('fileLabel').textContent = 'Choose PDF file';
                     showToast('✅ Book "' + name + '" added successfully!', 'success');
 
-                    // Try to get page count
-                    loadPdfMetadata(newBook.id, base64);
+                    // Try to get page count (using the arrayBuffer directly)
+                    loadPdfMetadata(newBook.id, arrayBuffer);
                 } catch (err) {
                     console.error('Add book error:', err);
                     showToast('⚠️ Error adding book: ' + err.message, 'error');
@@ -1853,7 +1853,7 @@
             reader.onerror = function(err) {
                 showToast('⚠️ Error reading file: ' + err.message, 'error');
             };
-            reader.readAsDataURL(file);
+            reader.readAsArrayBuffer(file);
         });
 
         // File input label update
@@ -1876,19 +1876,12 @@
         // ================================================================
         //  PDF METADATA (page count)
         // ================================================================
-        async function loadPdfMetadata(bookId, base64Data) {
+        async function loadPdfMetadata(bookId, arrayBuffer) {
             try {
                 const pdfjsLib = window.pdfjsLib;
                 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-                const byteCharacters = atob(base64Data);
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                const pdf = await pdfjsLib.getDocument({ data: byteArray }).promise;
-
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                 const book = getBook(bookId);
                 if (book) {
                     book.totalPages = pdf.numPages;
@@ -1901,7 +1894,7 @@
         }
 
         // ================================================================
-        //  DELETE BOOK (also from IndexedDB)
+        //  DELETE BOOK
         // ================================================================
         async function deleteBook(id) {
             if (!confirm('Delete this book?')) return;
@@ -1918,7 +1911,7 @@
             try {
                 await deletePDF(id);
             } catch (e) {
-                showToast('⚠️ Could not delete PDF from storage: ' + e.message, 'error');
+                showToast('⚠️ Could not delete PDF: ' + e.message, 'error');
                 return;
             }
 
@@ -2019,7 +2012,7 @@
         });
 
         // ================================================================
-        //  READING VIEW (with IndexedDB)
+        //  READING VIEW
         // ================================================================
         async function openReading(id) {
             const book = getBook(id);
@@ -2028,15 +2021,17 @@
                 return;
             }
 
-            if (!book.pdfData) {
+            // Fetch PDF from IndexedDB if we don't have it
+            let pdfData = book.pdfData;
+            if (!pdfData) {
                 try {
-                    const data = await getPDF(id);
-                    if (data) {
-                        book.pdfData = data;
-                    } else {
+                    pdfData = await getPDF(id);
+                    if (!pdfData) {
                         showToast('⚠️ PDF data not found in storage.', 'error');
                         return;
                     }
+                    // Keep the cloned buffer in memory for subsequent page rendering
+                    book.pdfData = pdfData;
                 } catch (e) {
                     showToast('⚠️ Error loading PDF: ' + e.message, 'error');
                     return;
@@ -2068,14 +2063,7 @@
                 const pdfjsLib = window.pdfjsLib;
                 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-                const byteCharacters = atob(book.pdfData);
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-
-                const pdf = await pdfjsLib.getDocument({ data: byteArray }).promise;
+                const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
                 readingState.pdfDoc = pdf;
                 readingState.totalPages = pdf.numPages;
                 book.totalPages = pdf.numPages;
@@ -2100,7 +2088,7 @@
                 console.error('PDF load error', e);
                 document.getElementById('pdfLoading').innerHTML = `
               <i class="fas fa-exclamation-triangle" style="color:#F87171;"></i>
-              Could not load PDF. The file may be corrupted or too large.
+              Could not load PDF. The file may be corrupted.
               <br><span style="font-size:12px;opacity:0.6;">${e.message}</span>
             `;
                 showToast('⚠️ Error loading PDF: ' + e.message, 'error');
@@ -2281,7 +2269,7 @@
         }
 
         // ================================================================
-        //  NAVIGATION (Tabs)
+        //  NAVIGATION
         // ================================================================
         document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -2325,7 +2313,7 @@
                 }
             });
 
-            console.log('📚 Farid Library initialized (pure IndexedDB)');
+            console.log('📚 Farid Library initialized (ArrayBuffer + IndexedDB, fixed detached buffer)');
         }
 
         document.addEventListener('DOMContentLoaded', init);
