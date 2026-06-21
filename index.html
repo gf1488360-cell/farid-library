@@ -534,7 +534,7 @@
             resize: vertical;
         }
         .form-group .file-input-wrapper {
-            position: relative;        /* critical fix */
+            position: relative;
             padding: 0;
             border: 2px dashed #E2E8F0;
             cursor: pointer;
@@ -554,7 +554,7 @@
         .form-group .file-input-wrapper input[type="file"] {
             position: absolute;
             top: 0;
-            left: 0;                 /* critical fix */
+            left: 0;
             width: 100%;
             height: 100%;
             opacity: 0;
@@ -1300,13 +1300,17 @@
         const SECURITY_CODE = '5578';
 
         // ================================================================
-        //  INDEXEDDB HELPERS (store PDF blobs)
+        //  INDEXEDDB STORAGE (no fallback, supports large files)
         // ================================================================
         const DB_NAME = 'FaridLibraryDB';
         const STORE_NAME = 'pdfs';
 
         function openDB() {
             return new Promise((resolve, reject) => {
+                if (!('indexedDB' in window) || window.indexedDB === null) {
+                    reject(new Error('IndexedDB not supported in this browser.'));
+                    return;
+                }
                 const request = indexedDB.open(DB_NAME, 1);
                 request.onupgradeneeded = (ev) => {
                     const db = ev.target.result;
@@ -1417,6 +1421,9 @@
             // After loading metadata, fetch PDFs and attach
             loadAllPDFs().then(() => {
                 updateAll();
+            }).catch(err => {
+                console.error('Failed to load PDFs:', err);
+                showToast('⚠️ Could not load PDF data: ' + err.message, 'error');
             });
         }
 
@@ -1459,6 +1466,7 @@
                     }
                 } catch (e) {
                     book.pdfData = null;
+                    console.warn(`Failed to load PDF for ${book.name}:`, e);
                 }
             }
         }
@@ -1778,7 +1786,7 @@
         }
 
         // ================================================================
-        //  ADD BOOK (with IndexedDB using FileReader)
+        //  ADD BOOK (with IndexedDB)
         // ================================================================
         document.getElementById('addBookForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -1803,6 +1811,7 @@
                 return;
             }
 
+            // Read file as data URL (base64)
             const reader = new FileReader();
             reader.onload = async function(ev) {
                 try {
@@ -1906,7 +1915,13 @@
             const book = getBook(id);
             if (!book) return;
 
-            await deletePDF(id);
+            try {
+                await deletePDF(id);
+            } catch (e) {
+                showToast('⚠️ Could not delete PDF from storage: ' + e.message, 'error');
+                return;
+            }
+
             state.books = state.books.filter(b => b.id !== id);
             if (readingState.bookId === id) {
                 closeReading();
@@ -1982,7 +1997,13 @@
             const book = getBook(id);
             if (!book) return;
 
-            await deletePDF(id);
+            try {
+                await deletePDF(id);
+            } catch (e) {
+                showToast('⚠️ Could not delete PDF: ' + e.message, 'error');
+                return;
+            }
+
             state.books = state.books.filter(b => b.id !== id);
             if (readingState.bookId === id) {
                 closeReading();
@@ -2013,11 +2034,11 @@
                     if (data) {
                         book.pdfData = data;
                     } else {
-                        showToast('⚠️ PDF data not found.', 'error');
+                        showToast('⚠️ PDF data not found in storage.', 'error');
                         return;
                     }
                 } catch (e) {
-                    showToast('⚠️ Error loading PDF.', 'error');
+                    showToast('⚠️ Error loading PDF: ' + e.message, 'error');
                     return;
                 }
             }
@@ -2079,9 +2100,10 @@
                 console.error('PDF load error', e);
                 document.getElementById('pdfLoading').innerHTML = `
               <i class="fas fa-exclamation-triangle" style="color:#F87171;"></i>
-              Could not load PDF. The file may be corrupted.
+              Could not load PDF. The file may be corrupted or too large.
+              <br><span style="font-size:12px;opacity:0.6;">${e.message}</span>
             `;
-                showToast('⚠️ Error loading PDF.', 'error');
+                showToast('⚠️ Error loading PDF: ' + e.message, 'error');
             }
         }
 
@@ -2303,7 +2325,7 @@
                 }
             });
 
-            console.log('📚 Farid Library initialized (IndexedDB)');
+            console.log('📚 Farid Library initialized (pure IndexedDB)');
         }
 
         document.addEventListener('DOMContentLoaded', init);
