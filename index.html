@@ -3,127 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Executive Intelligence Dashboard</title>
-    <!-- Tailwind CSS for high-contrast light corporate theme styling -->
+    <title>Executive Intelligence Hub</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #ffffff; color: #000000; }
-        /* Custom scrollbar matching navy styling */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #f8fafc; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col antialiased">
 
-    <!-- Top Navigation Header -->
-    <header class="border-b border-slate-200 bg-slate-50/80 backdrop-blur px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sticky top-0 z-50">
+    <!-- Corporate Master Header -->
+    <header class="border-b border-slate-200 bg-white/90 backdrop-blur px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sticky top-0 z-50">
         <div>
-            <h1 class="text-xl font-bold tracking-tight text-indigo-950 flex items-center gap-2">
-                <span class="text-indigo-600">⚡</span> Executive Intelligence Hub
+            <h1 class="text-lg font-bold tracking-tight text-indigo-950 flex items-center gap-2">
+                <span class="text-indigo-900">🏢</span> Executive Intelligence Systems
             </h1>
-            <p class="text-xs text-slate-500 mt-0.5">6-Month Operational Generalist Curriculum</p>
+            <p class="text-xs text-slate-500 mt-0.5">Professional Management & Strategic Advisement Matrix</p>
         </div>
-        <div class="flex items-center gap-3 bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm">
-            <span class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
-            <span id="current-timestamp" class="text-xs font-mono font-medium text-slate-700"></span>
+        <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl">
+            <span class="w-2 h-2 rounded-full bg-indigo-950 animate-pulse"></span>
+            <span id="current-timestamp" class="text-xs font-mono font-semibold text-indigo-950"></span>
         </div>
     </header>
 
-    <!-- Main Workspace Dashboard Grid -->
-    <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Main Strategic Workspace -->
+    <main class="flex-1 max-w-[1650px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        <!-- Left Column: Focus Target Overview & Day Calendar Selector -->
-        <section class="lg:col-span-4 flex flex-col gap-6">
-            <!-- Active Focus Card -->
-            <div class="bg-gradient-to-br from-indigo-50 to-slate-50 border border-indigo-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-600/5 rounded-full blur-3xl"></div>
-                <h2 class="text-xs font-bold tracking-widest text-indigo-700 uppercase">Today's Directive</h2>
-                <div id="today-title-display" class="text-2xl font-bold text-indigo-950 mt-2 tracking-tight"></div>
-                <div id="today-day-display" class="text-sm font-medium text-slate-600 mt-1"></div>
-                <div id="today-desc-display" class="text-sm text-slate-800 mt-4 leading-relaxed border-l-2 border-indigo-400 pl-3"></div>
+        <!-- Left Column: Directive & Strategic Domain Navigation -->
+        <section class="lg:col-span-5 flex flex-col gap-6">
+            
+            <!-- Today's Master Directive Block -->
+            <div class="bg-gradient-to-br from-slate-50 to-indigo-50/30 border border-slate-200 rounded-xl p-5 shadow-sm relative">
+                <div class="flex justify-between items-start">
+                    <h2 class="text-xs font-bold tracking-widest text-indigo-900 uppercase">Today's System Directive</h2>
+                    <span id="today-block-badge" class="text-[10px] font-mono font-bold bg-white border border-slate-200 px-2 py-0.5 rounded text-indigo-950"></span>
+                </div>
+                <div id="today-title-display" class="text-xl font-bold text-indigo-950 mt-2.5 tracking-tight"></div>
+                <div id="today-domain-display" class="text-xs font-medium text-slate-500 mt-0.5"></div>
+                <div id="today-desc-display" class="text-xs text-slate-800 mt-3.5 leading-relaxed border-l-2 border-indigo-900 pl-3"></div>
             </div>
 
-            <!-- Calendar Filter Matrix Box -->
-            <div class="bg-slate-50/60 border border-slate-200 rounded-2xl p-5 shadow-sm flex-1 flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-sm font-semibold text-indigo-950 tracking-wide">Curriculum Matrix</h3>
-                    <select id="topic-selector" class="bg-white border border-slate-200 text-xs text-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-600 transition-colors shadow-sm">
-                        <!-- Content auto-injected by JS -->
-                    </select>
+            <!-- Major Competency Field Matrix Navigator -->
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex-1 flex flex-col min-h-[500px]">
+                <div class="border-b border-slate-100 pb-3 mb-4">
+                    <h3 class="text-xs font-bold text-indigo-950 uppercase tracking-wider">Curriculum Competency Framework</h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Select a core field to explore its 25 master topics</p>
                 </div>
-                <!-- Mini Grid View Scroll Wrapper -->
-                <div class="flex-1 overflow-y-auto max-h-[380px] lg:max-h-none pr-1 space-y-2" id="matrix-days-list">
-                    <!-- Day Rows auto-rendered by JS -->
+
+                <!-- 6 Major Areas Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4" id="fields-grid-container">
+                    <!-- Injected dynamically via JS -->
+                </div>
+
+                <!-- Sub-Topic Listing Section -->
+                <div class="flex-1 flex flex-col bg-slate-50 border border-slate-100 rounded-xl p-3">
+                    <div class="flex justify-between items-center mb-2 px-1">
+                        <span id="topic-list-header" class="text-[11px] font-bold text-indigo-950 uppercase tracking-wide">Select a Field Above</span>
+                        <span class="text-[10px] font-mono text-slate-400">25 Focus Blocks</span>
+                    </div>
+                    <!-- Scrollable Topic Pipeline -->
+                    <div id="matrix-topics-list" class="flex-1 overflow-y-auto max-h-[280px] lg:max-h-[340px] pr-1 space-y-1.5">
+                        <!-- Content Injected via JS -->
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Right Column: Interactive Task Action Workspace View -->
-        <section id="workspace-view" class="lg:col-span-8 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+        <!-- Right Column: Corporate Action Workspace View -->
+        <section id="workspace-view" class="lg:col-span-7 bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col justify-between">
             <div class="space-y-6">
+                <!-- Workspace Header Row -->
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-4">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span id="active-badge" class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md"></span>
-                            <span id="active-index-label" class="text-xs font-mono text-slate-400"></span>
+                            <span id="active-field-badge" class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border"></span>
+                            <span id="active-index-label" class="text-[10px] font-mono text-slate-400"></span>
                         </div>
-                        <h2 id="active-task-title" class="text-2xl font-bold text-indigo-950 tracking-tight mt-1"></h2>
+                        <h2 id="active-task-title" class="text-xl font-bold text-indigo-950 tracking-tight mt-1.5"></h2>
                     </div>
-                    <div id="active-date-tag" class="text-xs font-mono bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-slate-600"></div>
                 </div>
 
-                <!-- Structured Deep Workspace Layout -->
-                <div class="space-y-6">
+                <!-- Structured Deep Workspace Content Block -->
+                <div class="space-y-5">
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Operational Context</h4>
-                        <p id="active-task-desc" class="text-sm text-slate-900 leading-relaxed bg-slate-50 p-4 border border-slate-100 rounded-xl"></p>
+                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Operational Context</h4>
+                        <p id="active-task-desc" class="text-xs text-slate-900 leading-relaxed bg-slate-50 p-4 border border-slate-100 rounded-xl"></p>
                     </div>
 
-                    <!-- Explicit Tool Breakdown Area for Tuesday -->
+                    <!-- Explicit Tool Breakdown Area for Digital Tools Area -->
                     <div id="tool-breakdown-section" class="hidden">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-2">Core Software Focus</h4>
-                        <div id="tool-badge-display" class="inline-flex items-center gap-2 text-xs font-mono bg-indigo-900 border border-indigo-950 px-3 py-1.5 rounded-xl text-white font-semibold shadow-sm"></div>
+                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-indigo-900 mb-1.5">Core Software Focus</h4>
+                        <div id="tool-badge-display" class="inline-flex items-center gap-2 text-xs font-mono bg-indigo-950 border border-indigo-900 px-3 py-1 rounded-md text-white font-semibold"></div>
                     </div>
 
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">ENTJ Execution Plan</h4>
-                        <ul class="text-sm text-slate-900 space-y-2.5 bg-slate-50/50 border border-slate-100 p-4 rounded-xl list-none pl-0" id="execution-plan-points">
+                        <h4 class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Strategic Execution Action Items</h4>
+                        <ul class="text-xs text-slate-900 space-y-2.5 bg-white border border-slate-100 p-4 rounded-xl" id="execution-plan-points">
                             <!-- Injected by JS -->
                         </ul>
-                    </div>
-
-                    <!-- Generalist Executive Tool Stack Strategy Integration -->
-                    <div class="border-t border-slate-100 pt-4">
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Master Executive Tooling Blueprint</h4>
-                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[11px] font-mono">
-                            <div class="bg-slate-50 p-2.5 border border-slate-100 rounded-xl text-center text-slate-800"><span class="text-purple-700 block font-bold mb-1">MIRO</span>Ideation &amp; Architecture</div>
-                            <div class="bg-slate-50 p-2.5 border border-slate-100 rounded-xl text-center text-slate-800"><span class="text-orange-700 block font-bold mb-1">FIGMA</span>UX Layouts &amp; Audits</div>
-                            <div class="bg-slate-50 p-2.5 border border-slate-100 rounded-xl text-center text-slate-800"><span class="text-blue-700 block font-bold mb-1">JIRA</span>Agile Agile Sprint Delivery</div>
-                            <div class="bg-slate-50 p-2.5 border border-slate-100 rounded-xl text-center text-slate-800"><span class="text-slate-700 block font-bold mb-1">NOTION</span>Enterprise Knowledge OS</div>
-                            <div class="bg-slate-50 p-2.5 border border-slate-100 rounded-xl text-center text-slate-800"><span class="text-amber-700 block font-bold mb-1">GA4</span>User Retention Logs</div>
-                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Dashboard Interaction Footer -->
-            <footer class="border-t border-slate-100 pt-4 mt-8 flex justify-between items-center text-xs text-slate-400">
-                <div>Framework Sandbox Protocol Active</div>
-                <div class="font-mono">T_e Optimization Vector // Light-Theme</div>
+            <!-- Dashboard Architecture Footer -->
+            <footer class="border-t border-slate-100 pt-4 mt-8 flex flex-col sm:flex-row justify-between items-center text-[11px] text-slate-400 gap-2">
+                <div>Operational Generalist Curriculum Execution Protocol</div>
+                <div class="font-mono">T_e System Alignment Block // High-Contrast Matrix</div>
             </footer>
         </section>
 
     </main>
 
-    <!-- App Engine JavaScript Operations Block -->
+    <!-- App Engine JavaScript -->
     <script>
-        const curriculum = {
-            Monday: {
-                title: "Interpersonal & Executive Presence",
-                color: "bg-blue-100 text-blue-800 border-blue-200",
+        const curriculumData = {
+            interpersonal: {
+                title: "Executive Presence & Comms",
+                short: "Presence",
+                skills: ["Radical Candor", "Vocal Modulation", "Strategic Storytelling", "C-Suite Alignment"],
+                color: "border-blue-200 bg-blue-50/50 text-blue-900",
                 topics: [
                     "Active Listening & Pacing", "Vocal Tone & Modulation", "Command of Body Language",
                     "Strategic Storytelling", "High-Impact Pitching", "Handling Executive Objections",
@@ -163,9 +165,11 @@
                     "Fostering strategic long-term corporate relationships with mentors and industry founders to unlock geometric career options."
                 ]
             },
-            Tuesday: {
-                title: "Digital Tools & Analytics",
-                color: "bg-cyan-100 text-cyan-800 border-cyan-200",
+            analytics: {
+                title: "Digital Tools & Stack Tech",
+                short: "Digital Stack",
+                skills: ["Miro Architecture", "Figma Design UI", "Jira Sprint Control", "GA4 Funnel Analytics"],
+                color: "border-cyan-200 bg-cyan-50/50 text-cyan-900",
                 tools: [
                     "Miro", "Miro", "Miro", "Miro", "Miro", 
                     "Figma", "Figma", "Figma", "Figma", "Figma", 
@@ -208,19 +212,21 @@
                     "Tracking real-time purchases, subscription revenue trends, average order values, and conversion percentages in Google Analytics dashboards."
                 ]
             },
-            Wednesday: {
+            strategy: {
                 title: "Corporate Strategy & Architecture",
-                color: "bg-purple-100 text-purple-800 border-purple-200",
+                short: "Strategy",
+                skills: ["M&A Evaluation", "Horizontal Scaling", "Value Chains", "Inorganic Growth Models"],
+                color: "border-purple-200 bg-purple-50/50 text-purple-900",
                 topics: [
-                    "Horizontal Integration", "Vertical Integration", "Corporate Value Chains",
-                    "Navigating Professional Failure", "Business Model Innovation", "Market Entry Strategies",
-                    "Inorganic Growth Dynamics", "M&A Target Evaluation", "Strategic Due Diligence",
-                    "Post-Merger Integration", "Corporate Capital Allocation", "Corporate Divestiture Strategy",
-                    "Joint Ventures & Alliances", "Competitive Moat Defense", "Global Expansion Vectors",
-                    "Conglomerate Discounts", "Revenue Diversification", "Shared Services Design",
-                    "Corporate Governance", "Financial Turnaround Plays", "Subsidiary Management",
-                    "Disruptive Threat Defense", "Scale Economies Optimization", "Corporate Venture Capital",
-                    "Governance-to-Execution"
+                    "Horizontal Integration Models", "Vertical Supply Capture", "Corporate Value Chain Auditing",
+                    "Organizational Risk Assessment", "Business Model Innovation", "Market Entry Mechanics",
+                    "Inorganic Expansion Blueprints", "M&A Target Evaluation Matrix", "Strategic Due Diligence Gates",
+                    "Post-Merger System Unification", "Corporate Capital Allocation Profiles", "Corporate Divestiture Strategy",
+                    "Joint Ventures & Corporate Alliances", "Competitive Moat Structural Defense", "Global Expansion Regulatory Vectors",
+                    "Conglomerate Valuation Mechanics", "Alternative Revenue Diversification", "Shared Services Architecture",
+                    "Corporate Governance Paradigms", "Financial Turnaround Logic Plans", "Subsidiary Independence Controls",
+                    "Disruptive Tech Vector Defense", "Scale Economies Cost Reductions", "Corporate Venture Capital Mapping",
+                    "Board Governance-to-Execution Pipelines"
                 ],
                 descriptions: [
                     "Expanding business boundaries by acquiring or launching matching products within identical industry horizontal levels.",
@@ -250,19 +256,21 @@
                     "Translating abstract corporate board parameters into day-to-day metrics and structured targets for product teams."
                 ]
             },
-            Thursday: {
-                title: "Core Grounding & Philosophy",
-                color: "bg-amber-100 text-amber-800 border-amber-200",
+            philosophy: {
+                title: "Philosophy & Leadership Grit",
+                short: "Philosophy",
+                skills: ["Stoic Frameworks", "Cognitive De-biasing", "Deep Work Focus", "Identity De-escalation"],
+                color: "border-amber-200 bg-amber-50/50 text-amber-900",
                 topics: [
-                    "Intentional Self-Mastery", "Emotional Grit & Resilience", "Navigating Professional Failure",
-                    "Imposter Syndrome Defense", "Ethical Decision-Making", "Stoic Mental Frameworks",
-                    "Intellectual Humility", "Detaching from Chaos", "Deep Work Conditioning",
-                    "Integrity Under Pressure", "Core Purpose Discovery", "Wisdom Frameworks",
-                    "Legacy-Driven Vision", "Patience in Compounding", "User Persona Mapping",
-                    "Embracing Constraints", "The Psychology of Ego", "Authentic Leadership",
-                    "Constructive Solitude", "Intentional Boundaries", "Processing Criticism Calmly",
-                    "Clarity Over Urgency", "Serving Others First", "Adapting to Macro Chaos",
-                    "Unshakeable Internal Peace"
+                    "Intentional Self-Mastery Loops", "Emotional Grit & System Resilience", "Navigating Professional Failure Matrix",
+                    "Imposter Syndrome Objective Defense", "Ethical Capitalist Decision-Making", "Stoic Response Isolation Models",
+                    "Intellectual Humility Architectures", "Sensory Detachment from Tactical Chaos", "Deep Work Cognitive Conditioning",
+                    "Corporate Integrity Under Crisis", "Core Organizational Purpose Discovery", "Classical Eastern Wisdom Synthesis",
+                    "Legacy-Driven Enterprise Vision", "Patience Constraints in Compounding Systems", "Empathetic Human Architecture Mapping",
+                    "Embracing Scarcity Constraints", "The Psychology of CEO Ego Deflection", "Authentic Vision Execution Leadership",
+                    "Constructive Strategic Solitude Blocks", "Intentional Input Resource Boundaries", "Processing Public Criticism Systems",
+                    "Clarity Optimization Over Urgency Hooks", "Servant Leadership Ecosystem Design", "Adapting Models to Macro Chaos Shifts",
+                    "Unshakeable Internal Operational Stability"
                 ],
                 descriptions: [
                     "Structuring absolute mastery over daily choices, operational focus, and emotional clarity to secure top execution.",
@@ -292,19 +300,21 @@
                     "Cultivating a steady, quiet internal operational state that remains untouched by competitive friction or daily firestorms."
                 ]
             },
-            Friday: {
+            product: {
                 title: "Product Management Mechanics",
-                color: "bg-emerald-100 text-emerald-800 border-emerald-200",
+                short: "Product Mgmt",
+                skills: ["Hook Loop Engineering", "CLTV Modeling", "Churn Diagnostics", "Defensibility Moats"],
+                color: "border-emerald-200 bg-emerald-50/50 text-emerald-900",
                 topics: [
-                    "Hook Model Basics", "Internal vs External Triggers", "Friction Reduction (Action)",
-                    "Variable Reward Engines", "Stored Value (Investment)", "Customer Lifetime Value (CLTV)",
-                    "Viral Cycle Time Optimization", "Churn Diagnosis & Fixes", "Onboarding Optimization",
-                    "Habit Testing Systems", "Infinite vs Finite Variability", "Network Effect Mechanics",
-                    "Vitamin to Painkiller Pivots", "User Persona Mapping", "Quant User Research",
-                    "Product-Market Fit Signals", "Value Proposition Design", "Monetization Architecture",
-                    "Feature Expansion Loops", "UX Psychological Laws", "Gamification Frameworks",
-                    "Cognitive App Heuristics", "Technical Debt Management", "Product Defensibility",
-                    "North Star Metric Design"
+                    "Hook Model Loop Basics", "Internal vs External System Triggers", "Friction Reduction Interface Actions",
+                    "Variable Reward Engine Architectures", "Stored Value User Equity Investments", "Customer Lifetime Value (CLTV) Modeling",
+                    "Viral Cycle Time Vector Compression", "Cohort Churn Diagnostics & System Fixes", "Frictionless User Onboarding Optimization",
+                    "Data-Driven Habit Testing Engines", "Infinite vs Finite Value Variability Models", "Network Effect Structural Mechanics",
+                    "Vitamin to Painkiller Feature Pivots", "Metrics-Driven User Persona Mapping", "Quantitative Structural User Research",
+                    "Product-Market Fit Quantitative Signals", "Value Proposition Structural Alignment", "Monetization Subscription Tier Design",
+                    "Feature Expansion Virality Loops", "UX Psychological Performance Laws", "Gamification Mechanics Architecture",
+                    "Cognitive Interface Heuristic Analysis", "Technical Debt Risk Allocation Management", "Product Defensibility Barrier Selection",
+                    "North Star Metric Ecosystem Validation"
                 ],
                 descriptions: [
                     "Mastering the 4-phase framework (Trigger, Action, Variable Reward, Investment) used to engineer digital habit loops.",
@@ -334,19 +344,21 @@
                     "Isolating the single core performance metric that best tracks real long-term value delivery across your user base."
                 ]
             },
-            Saturday: {
-                title: "High-Leverage Frameworks",
-                color: "bg-rose-100 text-rose-800 border-rose-200",
+            frameworks: {
+                title: "High-Leverage Strategic Frameworks",
+                short: "Frameworks",
+                skills: ["MECE Issue Trees", "Porter's 5 Forces", "RICE Prioritization", "VRIO Matrix Analysis"],
+                color: "border-rose-200 bg-rose-50/50 text-rose-900",
                 topics: [
-                    "MECE Issue Trees", "BCG Growth-Share Matrix", "Porter's Five Forces",
-                    "SWOT & TOWS Analysis", "PESTLE Context Analysis", "RICE Prioritization",
-                    "McKinsey 7S Model", "Blue Ocean Strategy", "GE-McKinsey Matrix",
-                    "Value Chain Analysis", "OKR Cascading Systems", "Ansoff Growth Matrix",
-                    "Balanced Scorecard", "VRIO Moat Framework", "Business Model Canvas",
-                    "First-Principles Thinking", "Root Cause (5 Whys) Analysis", "Core Competency Auditing",
-                    "Scenario Planning Models", "Kano Product Model", "Input vs Output Metrics",
-                    "Strategic Inflection Points", "Corporate Moat Auditing", "Pareto (80/20) Execution",
-                    "Executive Intelligence Mastery"
+                    "MECE Issue Trees Structure", "BCG Growth-Share Product Allocation", "Porter's Five Forces Market Diagnostic",
+                    "SWOT & TOWS Matrix Deployment", "PESTLE Macro Environmental Audits", "RICE Product Feature Prioritization",
+                    "McKinsey 7S Enterprise Alignment", "Blue Ocean Value Innovation Mechanics", "GE-McKinsey Strategic Selection Matrix",
+                    "Corporate Value Chain Core Auditing", "OKR Cascading Enterprise Objectives", "Ansoff Growth Expansion Grid",
+                    "Balanced Scorecard Metric Alignment", "VRIO Structural Moat Validation Matrix", "Business Model Canvas Blueprinting",
+                    "First-Principles Problem Deconstruction", "Root Cause (5 Whys) Systems Diagnostics", "Core Competency Isolation Audits",
+                    "Multi-Scenario Strategic Planning Models", "Kano Product Feature Classification", "Input vs Output Activity Metric Trees",
+                    "Strategic Market Inflection Point Pivots", "Corporate Moat Structural Audits", "Pareto (80/20) Engineering Focus Allocation",
+                    "Executive Intelligence Synthesis Mastery"
                 ],
                 descriptions: [
                     "Structuring complex business problems into Mutually Exclusive and Collectively Exhaustive logical branches.",
@@ -375,165 +387,210 @@
                     "Concentrating capital and developer resources onto the top 20% of product features that drive 80% of user retention.",
                     "Synthesizing diverse functional generalist knowledge blocks to direct enterprise ecosystems with absolute precision."
                 ]
-            },
-            Sunday: {
-                title: "LinkedIn & Footprint Management",
-                color: "bg-teal-100 text-teal-800 border-teal-200",
-                topics: Array(25).fill("Ecosystem Growth & Strategic Networking"),
-                descriptions: Array(25).fill("Execute professional personal branding tasks: Update, clean, and optimize your portfolio website's text assets, compose one high-impact LinkedIn post breaking down a specific tech framework, and perform high-context custom networking messages to 3-5 target corporate mentors and product leaders to scale real alliances.")
             }
         };
 
-        // Date & Metric State Logic (Locked to Year 2026 Sandbox Baseline)
+        // Static Global Sunday Directive Content Object
+        const sundayFootprintConfig = {
+            title: "Ecosystem Growth & Strategic Networking",
+            fieldTitle: "LinkedIn & Footprint Management",
+            desc: "Execute professional personal branding tasks: Update, clean, and optimize your portfolio website's text assets, compose one high-impact LinkedIn post breaking down a specific tech framework, and perform high-context custom networking messages to 3-5 target corporate mentors and product leaders to scale real alliances."
+        };
+
+        // System Date State Calculations (Locked to Year 2026 Baseline Sandbox)
         const currentZoneTime = new Date();
         const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         const todayDayName = dayNames[currentZoneTime.getDay()];
 
-        // WEEKLY ROTATION SYSTEM ENGINE: Treats June 21, 2026 as Week 1 (Block 01)
-        const startOfCurriculum = new Date(2026, 5, 21); // Month index 5 = June
+        // DOMAIN CALCULATOR MAPPING ENGINE (Converts days to structural curriculum areas)
+        const dayToFieldMap = {
+            "Monday": "interpersonal",
+            "Tuesday": "analytics",
+            "Wednesday": "strategy",
+            "Thursday": "philosophy",
+            "Friday": "product",
+            "Saturday": "frameworks",
+            "Sunday": "sunday_footprint"
+        };
+        const currentActiveFieldKey = dayToFieldMap[todayDayName];
+
+        // ROTATION ALGORITHM: Lock precisely onto Block 1 relative to June 21, 2026 launch week
+        const startOfCurriculum = new Date(2026, 5, 21); // June 21, 2026
         const millisecondsInWeek = 1000 * 60 * 60 * 24 * 7;
         const weeksElapsed = Math.floor((currentZoneTime - startOfCurriculum) / millisecondsInWeek);
-        const activeTopicIndex = Math.abs(weeksElapsed % 25); 
+        const activeTopicIndex = Math.abs(weeksElapsed % 25);
 
-        // Live Clock Ticker Object Loop
+        let currentlySelectedFieldKey = currentActiveFieldKey === "sunday_footprint" ? "interpersonal" : currentActiveFieldKey;
+
+        // Clock Ticker Update Loop
         function updateTicker() {
             const now = new Date();
-            const formatted = now.toLocaleDateString('en-US', { 
+            document.getElementById('current-timestamp').textContent = now.toLocaleDateString('en-US', { 
                 weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' 
             }) + ' | ' + now.toLocaleTimeString('en-US', { hour12: false });
-            document.getElementById('current-timestamp').textContent = formatted;
         }
         setInterval(updateTicker, 1000);
         updateTicker();
 
-        // Populate Matrix Selector Dropdown
-        const selectMenu = document.getElementById('topic-selector');
-        dayNames.forEach(d => {
-            const opt = document.createElement('option');
-            opt.value = d;
-            opt.textContent = `${d === "Sunday" ? "🔒 " : ""}${d} Matrix`;
-            if(d === todayDayName) opt.selected = true;
-            selectMenu.appendChild(opt);
-        });
-
-        selectMenu.addEventListener('change', (e) => renderMatrixDays(e.target.value));
-
-        // Left Menu Grid Builder
-        function renderMatrixDays(targetDay) {
-            const container = document.getElementById('matrix-days-list');
+        // Build Multi-Competency Field Navigation Row Items
+        function generateFieldsGrid() {
+            const container = document.getElementById('fields-grid-container');
             container.innerHTML = '';
-            const dayConfig = curriculum[targetDay];
 
-            dayConfig.topics.forEach((topic, idx) => {
-                const row = document.createElement('button');
-                const isCurrentActiveIndex = (targetDay === todayDayName && idx === activeTopicIndex);
-                
-                row.className = `w-full text-left p-3 rounded-xl border transition-all flex justify-between items-center group cursor-pointer ${
-                    isCurrentActiveIndex 
-                    ? 'bg-indigo-50 border-indigo-500 text-indigo-950 font-medium shadow-sm' 
-                    : 'bg-white border-slate-100 text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:text-black'
+            Object.keys(curriculumData).forEach(key => {
+                const item = curriculumData[key];
+                const isSelected = (key === currentlySelectedFieldKey);
+                const isActiveLiveToday = (key === currentActiveFieldKey);
+
+                const btn = document.createElement('button');
+                btn.className = `text-left p-3 rounded-lg border transition-all relative flex flex-col justify-between ${
+                    isSelected 
+                    ? 'bg-slate-900 border-slate-900 text-white shadow-sm' 
+                    : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-50'
                 }`;
 
-                const subtext = dayConfig.tools ? dayConfig.tools[idx].toUpperCase() : `Operational Block ${String(idx + 1).padStart(2, '0')}`;
+                // Process specific mini skill tags layout block inside matrix items
+                const tagsHTML = item.skills.map(sk => `
+                    <span class="text-[8px] px-1 py-0.5 rounded ${isSelected ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}">${sk}</span>
+                `).join('');
 
-                row.innerHTML = `
-                    <div class="flex flex-col gap-0.5 max-w-[85%]">
-                        <span class="text-[9px] font-mono tracking-wider uppercase opacity-60 text-slate-500">${subtext}</span>
-                        <span class="text-xs truncate ${isCurrentActiveIndex ? 'text-indigo-700 font-semibold' : 'text-slate-800 group-hover:text-black'}">${topic.split(': ').pop()}</span>
+                btn.innerHTML = `
+                    <div class="flex justify-between items-start w-full">
+                        <span class="text-xs font-bold tracking-tight">${item.short}</span>
+                        ${isActiveLiveToday ? '<span class="text-[8px] tracking-wider uppercase font-mono px-1 bg-indigo-600 text-white rounded">LIVE</span>' : ''}
                     </div>
-                    <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-50 border border-slate-200 group-hover:border-slate-300">View</span>
+                    <div class="flex flex-wrap gap-1 mt-2.5 w-full">${tagsHTML}</div>
                 `;
 
-                row.onclick = () => loadWorkspace(targetDay, idx);
+                btn.onclick = () => {
+                    currentlySelectedFieldKey = key;
+                    generateFieldsGrid();
+                    renderTopicsList(key);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        // Render Sub-Topic Row Indexes for Selected Field Block
+        function renderTopicsList(fieldKey) {
+            const container = document.getElementById('matrix-topics-list');
+            const listHeader = document.getElementById('topic-list-header');
+            container.innerHTML = '';
+
+            const selectedFieldObj = curriculumData[fieldKey];
+            listHeader.textContent = `${selectedFieldObj.title} Pipeline`;
+
+            selectedFieldObj.topics.forEach((topic, idx) => {
+                const isCurrentActiveGlobalBlock = (fieldKey === currentActiveFieldKey && idx === activeTopicIndex);
+                
+                const row = document.createElement('button');
+                row.className = `w-full text-left p-2.5 rounded-lg border transition-all flex justify-between items-center group cursor-pointer ${
+                    isCurrentActiveGlobalBlock 
+                    ? 'bg-indigo-50/70 border-indigo-500 text-indigo-950 font-medium' 
+                    : 'bg-white border-slate-200/60 text-slate-700 hover:bg-slate-50 hover:text-black'
+                }`;
+
+                const subtext = selectedFieldObj.tools ? selectedFieldObj.tools[idx].toUpperCase() : `Operational Block ${String(idx + 1).padStart(2, '0')}`;
+
+                row.innerHTML = `
+                    <div class="flex flex-col max-w-[85%]">
+                        <span class="text-[8px] font-mono tracking-wider uppercase opacity-60 text-slate-500">${subtext}</span>
+                        <span class="text-xs truncate ${isCurrentActiveGlobalBlock ? 'text-indigo-900 font-semibold' : 'text-slate-800 group-hover:text-black'}">${topic.split(': ').pop()}</span>
+                    </div>
+                    <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white border border-slate-200">Open</span>
+                `;
+
+                row.onclick = () => loadWorkspace(fieldKey, idx);
                 container.appendChild(row);
             });
         }
 
-        // Action Plan Logic Content Injector
-        function generateExecutionPoints(dayType, title, toolName) {
-            if (dayType === "Sunday") {
+        // Action Plan Point Generation Engine
+        function generateExecutionPoints(fieldKey, title, toolName) {
+            if (currentActiveFieldKey === "sunday_footprint" && fieldKey === "sunday_footprint") {
                 return `
-                    <li class="flex gap-2.5 items-start"><span class="text-indigo-600 font-mono text-xs mt-0.5">[01]</span> <p class="text-slate-900">Run an interface update on your custom web footprint, optimizing portfolio data rows.</p></li>
-                    <li class="flex gap-2.5 items-start"><span class="text-indigo-600 font-mono text-xs mt-0.5">[02]</span> <p class="text-slate-900">Draft a high-leverage LinkedIn text asset deconstructing an industrial or software corporate case study.</p></li>
-                    <li class="flex gap-2.5 items-start"><span class="text-indigo-600 font-mono text-xs mt-0.5">[03]</span> <p class="text-slate-900">Execute personalized networking signals to 3-5 high-altitude managers to forge operational connections.</p></li>
+                    <li class="flex gap-2.5 items-start"><span class="text-indigo-950 font-mono text-xs mt-0.5">[01]</span> <p>Audit assets inside your personal digital profile interface files to verify title consistency.</p></li>
+                    <li class="flex gap-2.5 items-start"><span class="text-indigo-950 font-mono text-xs mt-0.5">[02]</span> <p>Draft a tactical text insights asset breaking down a high-leverage product design choice on LinkedIn.</p></li>
+                    <li class="flex gap-2.5 items-start"><span class="text-indigo-950 font-mono text-xs mt-0.5">[03]</span> <p>Dispatch personalized alignment communications to 3-5 high-reputation network connections.</p></li>
                 `;
             }
 
-            if (dayType === "Tuesday") {
+            if (fieldKey === "analytics") {
                 const toolPlans = {
                     "Miro": [
-                        "Initialize a blank infinite Miro canvas and map out the system boundaries of your product portfolio.",
-                        "Use color-coded connection lines in Miro to visualize user emotion states linking directly to feature nodes.",
-                        "Export your completed Miro ecosystem strategy chart to share as a clean visual reference template for your team."
+                        "Initialize an open Miro canvas framework to blueprint structural system bounds.",
+                        "Track out end-to-end user navigation journeys via color-coded mapping modules inside Miro.",
+                        "Export a high-definition reference file from your Miro canvas to establish alignment across stakeholders."
                     ],
                     "Figma": [
-                        "Open your application's UI design assets inside Figma and run a visual spacing alignment check.",
-                        "Wire dynamic clickable prototyping interactions in Figma to trace paths and capture structural UX flaws.",
-                        "Isolate and redesign elements in your Figma file that cause unnecessary user cognitive load."
+                        "Open target file assets inside Figma to audit pixel spacings and screen layout elements.",
+                        "Build active high-fidelity click prototypes inside Figma to test cognitive friction zones.",
+                        "Isolate component assets inside your Figma interface library to preserve consistent layout rules."
                     ],
                     "Jira": [
-                        "Log into your Jira project dashboard, review task backlog priorities, and scrub outdated product descriptions.",
-                        "Create clean user stories inside a Jira active sprint view, assigning strict timeline tracking parameters.",
-                        "Analyze developer task cycle metrics in Jira to uncover and eliminate operational engineering blocks."
+                        "Review active engineering backlog items inside Jira, removing scope items that drift from current milestones.",
+                        "Draft complete user stories inside Jira sprint panels with objective criteria strings.",
+                        "Examine developer velocity tracking logs inside Jira to eliminate structural pipeline constraints."
                     ],
                     "Notion": [
-                        "Open your central enterprise wiki page in Notion and update standard technical operational guidelines.",
-                        "Configure database relation properties inside Notion to connect abstract corporate goals directly to daily execution metrics.",
-                        "Format a highly structured product requirement document template inside Notion for fast developer onboarding."
+                        "Update centralized workflow sheets inside your standard organization Notion space.",
+                        "Map cross-database rollup relations inside Notion to tie milestones directly to execution logs.",
+                        "Format clear system documentation specs inside Notion for efficient developer onboarding operations."
                     ],
                     "Google Analytics": [
-                        "Audit your tracking code instrumentation tags inside the Google Analytics 4 admin panel interface.",
-                        "Build custom user step funnel reports in Google Analytics to visually calculate specific retention loss zones.",
-                        "Compare different user entry acquisition vectors inside Google Analytics to identify high-value software traffic routes."
+                        "Audit pixel parameters and validation variables inside your Google Analytics admin interface panels.",
+                        "Build precise conversion funnel reports inside Google Analytics to locate core drop-off loops.",
+                        "Segment traffic vectors inside Google Analytics to track user cohorts with high retention values."
                     ]
                 };
                 return (toolPlans[toolName] || toolPlans["Miro"]).map((txt, i) => `
-                    <li class="flex gap-2.5 items-start">
-                        <span class="text-indigo-600 font-mono text-xs mt-0.5">[0${i+1}]</span>
-                        <p class="text-slate-900">${txt}</p>
-                    </li>
+                    <li class="flex gap-2.5 items-start"><span class="text-indigo-950 font-mono text-xs mt-0.5">[0${i+1}]</span><p>${txt}</p></li>
                 `).join('');
             }
 
-            const templates = {
-                Monday: ["Practice verbal pacing mechanics aloud in front of a recording loop for 10 minutes straight.", "Map communication weak-points in active cross-functional leadership projects.", "Simulate high-stakes boardroom objections and formulate logic gate responses."],
-                Wednesday: ["Draft an enterprise strategy architecture graph showing horizontal integration pathways.", "Run a strategic SWOT/TOWS matching simulation against an early-stage software target asset.", "Analyze how central shared services operations can reduce engineering resource duplication costs."],
-                Thursday: ["Isolate pride triggers from data metrics workflows to secure objective strategic reasoning.", "Apply explicit Stoic boundaries or Zavia wisdom concepts to active workplace challenges.", "Execute a 30-minute unbroken strategic focus block with zero digital noise or notifications."],
-                Friday: ["Deconstruct your product's onboarding path and isolate its exact primary friction points.", "Analyze your user retention curves to find exactly where habit loops degrade.", "Map your platform's current variable reward mechanisms against the complete Hook framework."],
-                Saturday: ["Apply this framework to a live enterprise case study under a strict 20-minute timer.", "Construct a clean MECE issue tree to isolate and diagnose an ongoing operational bottleneck.", "Calculate explicit RICE prioritization parameters across your software backlog items."]
-            };
-            return (templates[dayType] || templates["Thursday"]).map((txt, i) => `
-                <li class="flex gap-2.5 items-start">
-                    <span class="text-indigo-600 font-mono text-xs mt-0.5">[0${i+1}]</span>
-                    <p class="text-slate-900">${txt.replace('this framework', `the <b>${title}</b> framework`)}</p>
-                </li>
+            const genericTemplates = [
+                "Deconstruct structural friction points of this field within your active enterprise project logs.",
+                "Simulate deep scenario contingencies mapping out system choices step-by-step using data variables.",
+                "Execute an unbroken 30-minute deep analysis focus window to fully integrate the <b>${title}</b> framework parameters into your advisory workflows."
+            ];
+            return genericTemplates.map((txt, i) => `
+                <li class="flex gap-2.5 items-start"><span class="text-indigo-950 font-mono text-xs mt-0.5">[0${i+1}]</span><p>${txt}</p></li>
             `).join('');
         }
 
-        // Workspace Sync Frame Engine
-        function loadWorkspace(day, index) {
-            const config = curriculum[day];
-            const title = config.topics[index];
-            const desc = config.descriptions[index];
-
-            const badge = document.getElementById('active-badge');
+        // Active Deep Workspace View Sync Controller
+        function loadWorkspace(fieldKey, index) {
+            const badge = document.getElementById('active-field-badge');
             const titleEl = document.getElementById('active-task-title');
             const descEl = document.getElementById('active-task-desc');
             const indexEl = document.getElementById('active-index-label');
             const planEl = document.getElementById('execution-plan-points');
-            const dateTag = document.getElementById('active-date-tag');
             const toolSection = document.getElementById('tool-breakdown-section');
             const toolBadge = document.getElementById('tool-badge-display');
 
+            if (fieldKey === "sunday_footprint") {
+                badge.textContent = "FOOTPRINT MANAGEMENT";
+                badge.className = "text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-slate-900 bg-slate-900 text-white";
+                indexEl.textContent = "SYSTEM SYNC // WEEKLY SUNDAY OBJECTIVE";
+                titleEl.textContent = sundayFootprintConfig.title;
+                descEl.innerHTML = sundayFootprintConfig.desc;
+                toolSection.classList.add('hidden');
+                planEl.innerHTML = generateExecutionPoints("sunday_footprint", sundayFootprintConfig.title, "");
+                return;
+            }
+
+            const config = curriculumData[fieldKey];
+            const title = config.topics[index];
+            const desc = config.descriptions[index];
+
             badge.textContent = config.title;
-            badge.className = `text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md ${config.color}`;
-            indexEl.textContent = `CRIC-BLOCK // ${String(index + 1).padStart(2, '0')}`;
+            badge.className = `text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${config.color}`;
+            indexEl.textContent = `SYSTEM LOG BLOCK // INDEX ${String(index + 1).padStart(2, '0')}`;
             titleEl.textContent = title;
             descEl.innerHTML = desc;
-            dateTag.textContent = `${day.toUpperCase()} SELECTION`;
             
             let selectedToolName = "";
-            if (day === "Tuesday" && config.tools) {
+            if (fieldKey === "analytics" && config.tools) {
                 selectedToolName = config.tools[index];
                 toolSection.classList.remove('hidden');
                 toolBadge.textContent = selectedToolName.toUpperCase();
@@ -541,21 +598,35 @@
                 toolSection.classList.add('hidden');
             }
 
-            planEl.innerHTML = generateExecutionPoints(day, title, selectedToolName);
+            planEl.innerHTML = generateExecutionPoints(fieldKey, title, selectedToolName);
         }
 
-        // Start App Framework Logic
-        function initApp() {
-            const activeTodayConfig = curriculum[todayDayName];
-            document.getElementById('today-title-display').textContent = activeTodayConfig.topics[activeTopicIndex];
-            document.getElementById('today-day-display').textContent = `${todayDayName} • Block ${String(activeTopicIndex + 1).padStart(2, '0')}`;
-            document.getElementById('today-desc-display').textContent = activeTodayConfig.descriptions[activeTopicIndex];
+        // Initial Dynamic Boot Script
+        function initializeApp() {
+            if (currentActiveFieldKey === "sunday_footprint") {
+                // Handle dedicated Sunday display mechanics on launch
+                document.getElementById('today-block-badge').textContent = "SUNDAY EXEGESIS";
+                document.getElementById('today-title-display').textContent = sundayFootprintConfig.title;
+                document.getElementById('today-domain-display').textContent = sundayFootprintConfig.fieldTitle;
+                document.getElementById('today-desc-display').textContent = sundayFootprintConfig.desc;
+                
+                loadWorkspace("sunday_footprint", 0);
+            } else {
+                // Handle standard weekday competency target display mechanics on launch
+                const activeTodayConfig = curriculumData[currentActiveFieldKey];
+                document.getElementById('today-block-badge').textContent = `BLOCK ${String(activeTopicIndex + 1).padStart(2, '0')}`;
+                document.getElementById('today-title-display').textContent = activeTodayConfig.topics[activeTopicIndex];
+                document.getElementById('today-domain-display').textContent = activeTodayConfig.title;
+                document.getElementById('today-desc-display').textContent = activeTodayConfig.descriptions[activeTopicIndex];
+                
+                loadWorkspace(currentActiveFieldKey, activeTopicIndex);
+            }
 
-            renderMatrixDays(todayDayName);
-            loadWorkspace(todayDayName, activeTopicIndex);
+            generateFieldsGrid();
+            renderTopicsList(currentlySelectedFieldKey);
         }
 
-        initApp();
+        initializeApp();
     </script>
 </body>
 </html>
