@@ -1,2326 +1,540 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes" />
-    <title>Farid Library</title>
-
-    <!-- PDF.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js">
-    </script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Intelligence Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        /* ===== RESET & BASE ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        :root {
-            --primary: #4F46E5;
-            --primary-dark: #4338CA;
-            --primary-light: #818CF8;
-            --secondary: #F59E0B;
-            --bg: #F1F5F9;
-            --card: #FFFFFF;
-            --text: #0F172A;
-            --text-secondary: #475569;
-            --text-light: #94A3B8;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-            --radius: 16px;
-            --radius-sm: 10px;
-            --nav-height: 68px;
-            --header-height: 64px;
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-        }
-        html,
-        body {
-            height: 100%;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            overflow: hidden;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-        a,
-        button {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* ===== SCROLLBAR ===== */
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary-light);
-            border-radius: 10px;
-        }
-
-        /* ===== APP SHELL ===== */
-        #app {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            max-width: 480px;
-            margin: 0 auto;
-            background: var(--bg);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.05);
-        }
-
-        /* ===== HEADER ===== */
-        .app-header {
-            background: var(--card);
-            padding: 16px 20px 12px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            min-height: var(--header-height);
-            position: relative;
-            z-index: 10;
-        }
-        .app-header .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 20px;
-            color: var(--text);
-        }
-        .app-header .brand i {
-            color: var(--secondary);
-            font-size: 24px;
-        }
-        .app-header .brand span {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .app-header .header-actions {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        .app-header .header-actions button {
-            background: none;
-            border: none;
-            font-size: 18px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 6px;
-            border-radius: 50%;
-            transition: 0.2s;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .app-header .header-actions button:active {
-            background: var(--bg);
-        }
-        .app-header .header-actions .badge {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 18px;
-            height: 18px;
-            background: #EF4444;
-            color: #fff;
-            font-size: 10px;
-            font-weight: 700;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* ===== MAIN CONTENT ===== */
-        .main-content {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 16px 16px 12px;
-            padding-bottom: calc(var(--nav-height) + 16px + var(--safe-bottom));
-            scroll-behavior: smooth;
-        }
-        .main-content::-webkit-scrollbar {
-            width: 3px;
-        }
-        .main-content::-webkit-scrollbar-thumb {
-            background: var(--primary-light);
-            border-radius: 10px;
-        }
-
-        /* ===== TAB VIEWS ===== */
-        .tab-view {
-            display: none;
-            animation: fadeSlide 0.25s ease;
-        }
-        .tab-view.active {
-            display: block;
-        }
-
-        @keyframes fadeSlide {
-            0% {
-                opacity: 0;
-                transform: translateY(8px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* ===== BOTTOM NAV ===== */
-        .bottom-nav {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: calc(var(--nav-height) + var(--safe-bottom));
-            padding-bottom: var(--safe-bottom);
-            background: var(--card);
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
-            display: flex;
-            align-items: stretch;
-            z-index: 20;
-            box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.04);
-            flex-shrink: 0;
-        }
-        .bottom-nav .nav-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-            background: none;
-            border: none;
-            color: var(--text-light);
-            font-size: 11px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.2s;
-            padding: 6px 0;
-            position: relative;
-            font-family: 'Inter', sans-serif;
-        }
-        .bottom-nav .nav-item i {
-            font-size: 22px;
-            transition: 0.2s;
-        }
-        .bottom-nav .nav-item.active {
-            color: var(--primary);
-        }
-        .bottom-nav .nav-item.active i {
-            transform: scale(1.05);
-        }
-        .bottom-nav .nav-item .nav-label {
-            font-size: 10px;
-            letter-spacing: 0.3px;
-        }
-        .bottom-nav .nav-item:active {
-            background: rgba(79, 70, 229, 0.06);
-        }
-        .bottom-nav .nav-item .nav-indicator {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 20px;
-            height: 3px;
-            border-radius: 0 0 4px 4px;
-            background: var(--primary);
-            opacity: 0;
-            transition: 0.3s;
-        }
-        .bottom-nav .nav-item.active .nav-indicator {
-            opacity: 1;
-        }
-
-        /* ===== STATS CARDS ===== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background: var(--card);
-            border-radius: var(--radius-sm);
-            padding: 14px 10px;
-            text-align: center;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(0, 0, 0, 0.03);
-        }
-        .stat-card .stat-number {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--text);
-            line-height: 1.2;
-        }
-        .stat-card .stat-number .unit {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-        .stat-card .stat-label {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-top: 2px;
-            font-weight: 500;
-        }
-        .stat-card .stat-icon {
-            font-size: 18px;
-            color: var(--primary-light);
-            margin-bottom: 4px;
-        }
-        .stat-card.accent .stat-icon {
-            color: var(--secondary);
-        }
-        .stat-card.accent2 .stat-icon {
-            color: #10B981;
-        }
-
-        /* ===== SECTION TITLE ===== */
-        .section-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text);
-            margin: 18px 0 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .section-title i {
-            color: var(--primary-light);
-            font-size: 16px;
-        }
-        .section-title .see-all {
-            margin-left: auto;
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--primary);
-            cursor: pointer;
-            background: none;
-            border: none;
-        }
-
-        /* ===== BOOK CARDS ===== */
-        .book-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 8px;
-        }
-        .book-card {
-            background: var(--card);
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid rgba(0, 0, 0, 0.03);
-            display: flex;
-            flex-direction: column;
-        }
-        .book-card:active {
-            transform: scale(0.97);
-        }
-        .book-card .book-cover {
-            width: 100%;
-            aspect-ratio: 3/4;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 42px;
-            color: #fff;
-            position: relative;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            min-height: 100px;
-        }
-        .book-card .book-cover .cover-text {
-            font-size: 14px;
-            font-weight: 600;
-            text-align: center;
-            padding: 8px;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            line-height: 1.3;
-            max-width: 80%;
-            word-break: break-word;
-        }
-        .book-card .book-cover .book-icon {
-            font-size: 48px;
-            opacity: 0.3;
-            position: absolute;
-        }
-        .book-card .book-cover .progress-badge {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-            color: #fff;
-            font-size: 10px;
-            font-weight: 600;
-            padding: 3px 10px;
-            border-radius: 20px;
-        }
-        .book-card .book-info {
-            padding: 10px 12px 12px;
-            flex: 1;
-        }
-        .book-card .book-info .book-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .book-card .book-info .book-writer {
-            font-size: 11px;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-top: 1px;
-        }
-        .book-card .book-info .book-meta {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 6px;
-            font-size: 10px;
-            color: var(--text-light);
-        }
-        .book-card .book-info .book-meta i {
-            font-size: 10px;
-        }
-
-        /* ===== CONTINUE READING ===== */
-        .continue-card {
-            background: var(--card);
-            border-radius: var(--radius-sm);
-            padding: 14px 16px;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            border-left: 4px solid var(--secondary);
-            margin-bottom: 4px;
-            cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid rgba(0, 0, 0, 0.03);
-            border-left-width: 4px;
-        }
-        .continue-card:active {
-            transform: scale(0.98);
-        }
-        .continue-card .continue-icon {
-            width: 44px;
-            height: 44px;
-            background: rgba(79, 70, 229, 0.08);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            color: var(--primary);
-            flex-shrink: 0;
-        }
-        .continue-card .continue-info {
-            flex: 1;
-            min-width: 0;
-        }
-        .continue-card .continue-info .continue-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .continue-card .continue-info .continue-desc {
-            font-size: 12px;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 2px;
-        }
-        .continue-card .continue-info .continue-desc i {
-            font-size: 10px;
-        }
-        .continue-card .continue-arrow {
-            color: var(--text-light);
-            font-size: 14px;
-        }
-
-        /* ===== EMPTY STATE ===== */
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-secondary);
-        }
-        .empty-state i {
-            font-size: 56px;
-            color: var(--text-light);
-            margin-bottom: 16px;
-            opacity: 0.4;
-        }
-        .empty-state h3 {
-            font-size: 18px;
-            color: var(--text);
-            margin-bottom: 6px;
-        }
-        .empty-state p {
-            font-size: 14px;
-            max-width: 260px;
-            margin: 0 auto;
-            line-height: 1.5;
-        }
-
-        /* ===== ADD FORM ===== */
-        .form-group {
-            margin-bottom: 16px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 5px;
-        }
-        .form-group label .required {
-            color: #EF4444;
-            margin-left: 2px;
-        }
-        .form-group input,
-        .form-group textarea,
-        .form-group .file-input-wrapper {
-            width: 100%;
-            padding: 12px 14px;
-            border: 2px solid #E2E8F0;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            font-family: 'Inter', sans-serif;
-            transition: 0.2s;
-            background: var(--card);
-            color: var(--text);
-            outline: none;
-        }
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
-        }
-        .form-group textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-        .form-group .file-input-wrapper {
-            position: relative;
-            padding: 0;
-            border: 2px dashed #E2E8F0;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: var(--text-secondary);
-            background: #FAFBFC;
-            min-height: 48px;
-            transition: 0.2s;
-        }
-        .form-group .file-input-wrapper:hover {
-            border-color: var(--primary-light);
-            background: #F8FAFF;
-        }
-        .form-group .file-input-wrapper input[type="file"] {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-        .form-group .file-input-wrapper .file-name {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--primary);
-            max-width: 180px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .form-group .file-input-wrapper.has-file {
-            border-color: var(--primary);
-            background: rgba(79, 70, 229, 0.04);
-        }
-        .form-group .file-input-wrapper i {
-            font-size: 18px;
-            color: var(--text-light);
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 12px 24px;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-        }
-        .btn-primary {
-            background: var(--primary);
-            color: #fff;
-        }
-        .btn-primary:active {
-            transform: scale(0.97);
-            background: var(--primary-dark);
-        }
-        .btn-secondary {
-            background: #E2E8F0;
-            color: var(--text-secondary);
-        }
-        .btn-secondary:active {
-            background: #CBD5E1;
-        }
-        .btn-danger {
-            background: #EF4444;
-            color: #fff;
-        }
-        .btn-danger:active {
-            background: #DC2626;
-        }
-        .btn-success {
-            background: #10B981;
-            color: #fff;
-        }
-        .btn-success:active {
-            background: #059669;
-        }
-        .btn-outline {
-            background: transparent;
-            border: 2px solid #E2E8F0;
-            color: var(--text-secondary);
-        }
-        .btn-outline:active {
-            background: var(--bg);
-        }
-        .btn-sm {
-            padding: 8px 14px;
-            font-size: 12px;
-            width: auto;
-        }
-
-        /* ===== BOOK LIST IN ADD/EDIT ===== */
-        .book-list {
-            margin-top: 20px;
-        }
-        .book-list .book-list-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-        .book-list .book-list-header span {
-            font-weight: 400;
-            color: var(--text-light);
-            font-size: 12px;
-        }
-        .book-list-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: var(--card);
-            padding: 10px 14px;
-            border-radius: var(--radius-sm);
-            margin-bottom: 8px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(0, 0, 0, 0.03);
-            transition: 0.2s;
-        }
-        .book-list-item .item-cover {
-            width: 40px;
-            height: 52px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            color: #fff;
-            flex-shrink: 0;
-            background: var(--primary);
-        }
-        .book-list-item .item-info {
-            flex: 1;
-            min-width: 0;
-        }
-        .book-list-item .item-info .item-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .book-list-item .item-info .item-writer {
-            font-size: 12px;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .book-list-item .item-actions {
-            display: flex;
-            gap: 6px;
-            flex-shrink: 0;
-        }
-        .book-list-item .item-actions button {
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 50%;
-            background: var(--bg);
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-        }
-        .book-list-item .item-actions button:active {
-            transform: scale(0.92);
-        }
-        .book-list-item .item-actions .btn-edit {
-            color: var(--primary);
-            background: rgba(79, 70, 229, 0.08);
-        }
-        .book-list-item .item-actions .btn-delete {
-            color: #EF4444;
-            background: rgba(239, 68, 68, 0.08);
-        }
-        .book-list-item .item-actions .btn-delete:active {
-            background: rgba(239, 68, 68, 0.2);
-        }
-
-        /* ===== MODAL ===== */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.5);
-            backdrop-filter: blur(6px);
-            z-index: 100;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            animation: fadeIn 0.2s ease;
-        }
-        .modal-overlay.open {
-            display: flex;
-        }
-        @keyframes fadeIn {
-            0% {
-                opacity: 0;
-            }
-            100% {
-                opacity: 1;
-            }
-        }
-        .modal {
-            background: var(--card);
-            border-radius: var(--radius);
-            max-width: 400px;
-            width: 100%;
-            padding: 24px 20px 20px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-            animation: slideUp 0.25s ease;
-        }
-        @keyframes slideUp {
-            0% {
-                transform: translateY(20px);
-                opacity: 0;
-            }
-            100% {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        .modal .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        .modal .modal-header h3 {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        .modal .modal-header .modal-close {
-            width: 32px;
-            height: 32px;
-            border: none;
-            background: var(--bg);
-            border-radius: 50%;
-            font-size: 16px;
-            cursor: pointer;
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal .modal-header .modal-close:active {
-            background: #E2E8F0;
-        }
-        .modal .modal-body .form-group:last-child {
-            margin-bottom: 0;
-        }
-        .modal .modal-footer {
-            display: flex;
-            gap: 10px;
-            margin-top: 18px;
-        }
-        .modal .modal-footer .btn {
-            flex: 1;
-        }
-
-        /* ===== READING VIEW (overlay) ===== */
-        .reading-overlay {
-            position: fixed;
-            inset: 0;
-            background: #1a1a2e;
-            z-index: 200;
-            display: none;
-            flex-direction: column;
-            animation: fadeIn 0.3s ease;
-        }
-        .reading-overlay.open {
-            display: flex;
-        }
-        .reading-overlay .reading-header {
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(12px);
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-            z-index: 10;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        .reading-overlay .reading-header .reading-title {
-            color: #fff;
-            font-size: 15px;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 60%;
-        }
-        .reading-overlay .reading-header .reading-close {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: #fff;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-size: 18px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-        }
-        .reading-overlay .reading-header .reading-close:active {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        .reading-overlay .reading-header .reading-timer {
-            color: #fff;
-            font-size: 14px;
-            font-weight: 500;
-            background: rgba(255, 255, 255, 0.08);
-            padding: 4px 14px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .reading-overlay .reading-header .reading-timer i {
-            font-size: 12px;
-            color: var(--secondary);
-        }
-
-        .reading-overlay .pdf-container {
-            flex: 1;
-            overflow-y: auto;
-            background: #1a1a2e;
-            padding: 12px 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .reading-overlay .pdf-container canvas {
-            max-width: 100%;
-            height: auto !important;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-            border-radius: 4px;
-            background: #fff;
-        }
-        .reading-overlay .pdf-container .pdf-loading {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 14px;
-            padding: 60px 20px;
-            text-align: center;
-        }
-        .reading-overlay .pdf-container .pdf-loading i {
-            font-size: 32px;
-            display: block;
-            margin-bottom: 12px;
-        }
-
-        .reading-overlay .reading-footer {
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(12px);
-            padding: 10px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            gap: 10px;
-        }
-        .reading-overlay .reading-footer button {
-            background: rgba(255, 255, 255, 0.08);
-            border: none;
-            color: #fff;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-            flex-shrink: 0;
-        }
-        .reading-overlay .reading-footer button:active {
-            background: rgba(255, 255, 255, 0.18);
-        }
-        .reading-overlay .reading-footer .page-info {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 13px;
-            font-weight: 500;
-            flex: 1;
-            text-align: center;
-        }
-        .reading-overlay .reading-footer .page-info input {
-            width: 50px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            padding: 4px 6px;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 13px;
-            font-weight: 500;
-            font-family: 'Inter', sans-serif;
-            outline: none;
-        }
-        .reading-overlay .reading-footer .page-info input:focus {
-            border-color: var(--primary-light);
-        }
-        .reading-overlay .reading-footer .page-info span {
-            margin: 0 4px;
-        }
-
-        /* ===== NOTIFICATION TOAST ===== */
-        .toast {
-            position: fixed;
-            bottom: calc(var(--nav-height) + 20px + var(--safe-bottom));
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--text);
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-            font-weight: 500;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-            z-index: 300;
-            display: none;
-            max-width: 90%;
-            text-align: center;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        .toast.show {
-            display: block;
-            animation: toastIn 0.3s ease;
-        }
-        @keyframes toastIn {
-            0% {
-                opacity: 0;
-                transform: translateX(-50%) translateY(16px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-        }
-        .toast i {
-            margin-right: 8px;
-        }
-        .toast.success i {
-            color: #34D399;
-        }
-        .toast.error i {
-            color: #F87171;
-        }
-        .toast.warning i {
-            color: #FBBF24;
-        }
-
-        /* ===== RESPONSIVE TWEAKS ===== */
-        @media (min-width: 480px) {
-            #app {
-                border-left: 1px solid rgba(0, 0, 0, 0.04);
-                border-right: 1px solid rgba(0, 0, 0, 0.04);
-            }
-        }
-        @media (max-width: 380px) {
-            .stats-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 6px;
-            }
-            .stat-card {
-                padding: 10px 6px;
-            }
-            .stat-card .stat-number {
-                font-size: 18px;
-            }
-            .book-grid {
-                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-                gap: 8px;
-            }
-            .book-card .book-cover .cover-text {
-                font-size: 12px;
-            }
-            .modal {
-                padding: 18px 14px;
-            }
-        }
-
-        /* ===== UTILITY ===== */
-        .text-center {
-            text-align: center;
-        }
-        .mt-8 {
-            margin-top: 8px;
-        }
-        .mt-12 {
-            margin-top: 12px;
-        }
-        .mt-16 {
-            margin-top: 16px;
-        }
-        .mb-8 {
-            margin-bottom: 8px;
-        }
-        .flex-center {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .gap-6 {
-            gap: 6px;
-        }
-        .hidden {
-            display: none !important;
-        }
-        .w-full {
-            width: 100%;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0f19; }
     </style>
 </head>
-<body>
+<body class="text-slate-200 min-h-screen flex flex-col">
 
-    <!-- ===== APP ===== -->
-    <div id="app">
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sticky top-0 z-50">
+        <div>
+            <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                <span class="text-emerald-400">⚡</span> Executive Intelligence Hub
+            </h1>
+            <p class="text-xs text-slate-400 mt-0.5">6-Month Operational Generalist Curriculum</p>
+        </div>
+        <div class="flex items-center gap-3 bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl shadow-inner">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="current-timestamp" class="text-xs font-mono font-medium text-slate-300"></span>
+        </div>
+    </header>
 
-        <!-- ===== HEADER ===== -->
-        <header class="app-header">
-            <div class="brand">
-                <i class="fas fa-book-open"></i>
-                <span>Farid Library</span>
-            </div>
-            <div class="header-actions">
-                <button id="notificationToggle" title="Notifications" onclick="toggleNotifications()">
-                    <i class="fas fa-bell"></i>
-                    <span class="badge" id="notifBadge" style="display:none;">1</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- ===== MAIN CONTENT ===== -->
-        <div class="main-content" id="mainContent">
-
-            <!-- ===== HOME TAB ===== -->
-            <div class="tab-view active" id="tabHome">
-                <div class="stats-grid" id="statsGrid">
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-books"></i></div>
-                        <div class="stat-number" id="statBooks">0</div>
-                        <div class="stat-label">Books</div>
-                    </div>
-                    <div class="stat-card accent">
-                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                        <div class="stat-number" id="statMinutes">0<span class="unit">m</span></div>
-                        <div class="stat-label">Read Today</div>
-                    </div>
-                    <div class="stat-card accent2">
-                        <div class="stat-icon"><i class="fas fa-fire"></i></div>
-                        <div class="stat-number" id="statStreak">0</div>
-                        <div class="stat-label">Day Streak</div>
-                    </div>
-                </div>
-
-                <div id="continueReadingSection"></div>
-
-                <div class="section-title">
-                    <i class="fas fa-book"></i> My Books
-                    <span style="margin-left:auto;font-weight:400;font-size:12px;color:var(--text-light);" id="bookCountLabel">0 books</span>
-                </div>
-                <div class="book-grid" id="homeBookGrid"></div>
-                <div id="homeEmptyState" class="empty-state" style="display:none;">
-                    <i class="fas fa-book-open"></i>
-                    <h3>No books yet</h3>
-                    <p>Add your first book in the <strong>Add</strong> tab and start reading!</p>
-                </div>
+    <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <section class="lg:col-span-4 flex flex-col gap-6">
+            <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl"></div>
+                <h2 class="text-xs font-bold tracking-widest text-emerald-400 uppercase">Today's Directive</h2>
+                <div id="today-title-display" class="text-2xl font-bold text-white mt-2 tracking-tight"></div>
+                <div id="today-day-display" class="text-sm font-medium text-slate-400 mt-1"></div>
+                <div id="today-desc-display" class="text-sm text-slate-300 mt-4 leading-relaxed border-l-2 border-slate-700 pl-3"></div>
             </div>
 
-            <!-- ===== ADD TAB ===== -->
-            <div class="tab-view" id="tabAdd">
-                <div style="background:var(--card);border-radius:var(--radius-sm);padding:18px 16px 16px;box-shadow:var(--shadow);margin-bottom:16px;border:1px solid rgba(0,0,0,0.03);">
-                    <h3 style="font-size:16px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
-                        <i class="fas fa-plus-circle" style="color:var(--primary);"></i> Add New Book
-                    </h3>
-                    <form id="addBookForm" autocomplete="off">
-                        <div class="form-group">
-                            <label>Book Name <span class="required">*</span></label>
-                            <input type="text" id="bookName" placeholder="e.g. The Alchemist" required />
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 shadow-lg flex-1 flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-semibold text-white tracking-wide">Curriculum Matrix</h3>
+                    <select id="topic-selector" class="bg-slate-950 border border-slate-800 text-xs text-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500 transition-colors">
+                        </select>
+                </div>
+                <div class="flex-1 overflow-y-auto max-h-[380px] lg:max-h-none pr-1 space-y-2" id="matrix-days-list">
+                    </div>
+            </div>
+        </section>
+
+        <section id="workspace-view" class="lg:col-span-8 bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+            <div class="space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800/80 pb-4 gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span id="active-badge" class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md"></span>
+                            <span id="active-index-label" class="text-xs font-mono text-slate-500"></span>
                         </div>
-                        <div class="form-group">
-                            <label>Writer <span class="required">*</span></label>
-                            <input type="text" id="bookWriter" placeholder="e.g. Paulo Coelho" required />
+                        <h2 id="active-task-title" class="text-2xl font-bold text-white tracking-tight mt-1"></h2>
+                    </div>
+                    <div id="active-date-tag" class="text-xs font-mono bg-slate-950 border border-slate-800/80 px-3 py-1.5 rounded-lg text-slate-400"></div>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Operational Context</h4>
+                        <p id="active-task-desc" class="text-sm text-slate-300 leading-relaxed bg-slate-950/40 p-4 border border-slate-900 rounded-xl"></p>
+                    </div>
+
+                    <div id="tool-breakdown-section" class="hidden">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-cyan-400 mb-2">Core Software Focus</h4>
+                        <div id="tool-badge-display" class="inline-flex items-center gap-2 text-xs font-mono bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl text-white font-semibold"></div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">ENTJ Execution Plan</h4>
+                        <ul class="text-sm text-slate-300 space-y-2.5 bg-slate-950/20 border border-slate-900 p-4 rounded-xl list-none pl-0" id="execution-plan-points">
+                            </ul>
+                    </div>
+
+                    <div class="border-t border-slate-800/80 pt-4">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Master Executive Tooling Blueprint</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-[11px] font-mono">
+                            <div class="bg-slate-950/60 p-2.5 border border-slate-900 rounded-xl text-center"><span class="text-purple-400 block font-bold mb-1">MIRO</span>Ideation &amp; Strategy Mapping</div>
+                            <div class="bg-slate-950/60 p-2.5 border border-slate-900 rounded-xl text-center"><span class="text-orange-400 block font-bold mb-1">FIGMA</span>UX Blueprint &amp; Interface Audit</div>
+                            <div class="bg-slate-950/60 p-2.5 border border-slate-900 rounded-xl text-center"><span class="text-blue-400 block font-bold mb-1">JIRA</span>Scrum Sprints &amp; Dev Execution</div>
+                            <div class="bg-slate-950/60 p-2.5 border border-slate-900 rounded-xl text-center"><span class="text-slate-400 block font-bold mb-1">NOTION</span>Knowledge Base &amp; OS Wiki</div>
+                            <div class="bg-slate-950/60 p-2.5 border border-slate-900 rounded-xl text-center"><span class="text-yellow-400 block font-bold mb-1">GOOGLE ANALYTICS</span>User Data &amp; Churn Metrics</div>
                         </div>
-                        <div class="form-group">
-                            <label>Description</label>
-                            <textarea id="bookDesc" placeholder="A brief description of the book..." rows="2"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>PDF File <span class="required">*</span></label>
-                            <div class="file-input-wrapper" id="fileWrapper">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <span id="fileLabel">Choose PDF file</span>
-                                <input type="file" id="pdfFile" accept=".pdf" required />
-                                <span class="file-name" id="fileNameDisplay"></span>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary" id="addBookBtn">
-                            <i class="fas fa-save"></i> Save Book
-                        </button>
-                    </form>
-                </div>
-
-                <div class="book-list">
-                    <div class="book-list-header">
-                        <span>All Books</span>
-                        <span id="addBookCount">0 books</span>
-                    </div>
-                    <div id="addBookList"></div>
-                    <div id="addEmptyState" class="empty-state" style="padding:24px 0;">
-                        <i class="fas fa-plus-circle" style="font-size:32px;"></i>
-                        <p style="font-size:13px;">Add your first book above</p>
                     </div>
                 </div>
             </div>
 
-            <!-- ===== EDIT TAB ===== -->
-            <div class="tab-view" id="tabEdit">
-                <div style="background:var(--card);border-radius:var(--radius-sm);padding:14px 16px;box-shadow:var(--shadow);margin-bottom:16px;border:1px solid rgba(0,0,0,0.03);display:flex;align-items:center;gap:10px;">
-                    <i class="fas fa-lock" style="color:var(--text-light);font-size:14px;"></i>
-                    <span style="font-size:13px;color:var(--text-secondary);">Code <strong>5578</strong> required for edits &amp; deletions</span>
-                </div>
-                <div class="book-list">
-                    <div class="book-list-header">
-                        <span>Manage Books</span>
-                        <span id="editBookCount">0 books</span>
-                    </div>
-                    <div id="editBookList"></div>
-                    <div id="editEmptyState" class="empty-state" style="padding:24px 0;">
-                        <i class="fas fa-edit" style="font-size:32px;"></i>
-                        <p style="font-size:13px;">No books to edit</p>
-                    </div>
-                </div>
-            </div>
+            <footer class="border-t border-slate-800/80 pt-4 mt-8 flex justify-between items-center text-xs text-slate-500">
+                <div>Framework Sandbox Protocol Active</div>
+                <div class="font-mono">T_e Optimization Vector</div>
+            </footer>
+        </section>
 
-        </div>
-
-        <!-- ===== BOTTOM NAV ===== -->
-        <nav class="bottom-nav" id="bottomNav">
-            <button class="nav-item active" data-tab="tabHome">
-                <span class="nav-indicator"></span>
-                <i class="fas fa-home"></i>
-                <span class="nav-label">Home</span>
-            </button>
-            <button class="nav-item" data-tab="tabAdd">
-                <span class="nav-indicator"></span>
-                <i class="fas fa-plus-circle"></i>
-                <span class="nav-label">Add</span>
-            </button>
-            <button class="nav-item" data-tab="tabEdit">
-                <span class="nav-indicator"></span>
-                <i class="fas fa-pen"></i>
-                <span class="nav-label">Edit</span>
-            </button>
-        </nav>
-
-        <!-- ===== TOAST ===== -->
-        <div class="toast" id="toast"></div>
-    </div>
-
-    <!-- ===== MODAL (Edit) ===== -->
-    <div class="modal-overlay" id="editModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3><i class="fas fa-pen" style="color:var(--primary);margin-right:6px;"></i> Edit Book</h3>
-                <button class="modal-close" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <form id="editForm" autocomplete="off">
-                    <input type="hidden" id="editBookId" />
-                    <div class="form-group">
-                        <label>Book Name <span class="required">*</span></label>
-                        <input type="text" id="editBookName" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Writer <span class="required">*</span></label>
-                        <input type="text" id="editBookWriter" required />
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea id="editBookDesc" rows="2"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Security Code <span class="required">*</span></label>
-                        <input type="password" id="editSecurityCode" placeholder="Enter code 5578" maxlength="4" inputmode="numeric" required />
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" id="editDeleteBtn" onclick="deleteBookFromEdit()">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Update
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== READING OVERLAY ===== -->
-    <div class="reading-overlay" id="readingOverlay">
-        <div class="reading-header">
-            <span class="reading-title" id="readingTitle">Book</span>
-            <div class="reading-timer" id="readingTimer">
-                <i class="fas fa-hourglass-half"></i>
-                <span id="readingTimeDisplay">00:00</span>
-            </div>
-            <button class="reading-close" onclick="closeReading()"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="pdf-container" id="pdfContainer">
-            <div class="pdf-loading" id="pdfLoading">
-                <i class="fas fa-spinner fa-pulse"></i>
-                Loading PDF...
-            </div>
-            <div id="pdfPages" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;"></div>
-        </div>
-        <div class="reading-footer">
-            <button onclick="prevPage()"><i class="fas fa-chevron-left"></i></button>
-            <div class="page-info">
-                <input type="number" id="pageInput" min="1" value="1" />
-                <span>/</span>
-                <span id="totalPages">1</span>
-            </div>
-            <button onclick="nextPage()"><i class="fas fa-chevron-right"></i></button>
-            <button onclick="toggleReadingTimer()" id="timerToggleBtn" style="background:rgba(79,70,229,0.2);">
-                <i class="fas fa-play" id="timerIcon"></i>
-            </button>
-        </div>
-    </div>
+    </main>
 
     <script>
-        // ================================================================
-        //  CONFIG
-        // ================================================================
-        const APP_KEY = 'farid_library_data';
-        const DAILY_GOAL = 20;
-        const NOTIF_CHECK_INTERVAL = 3600000;
-        const SECURITY_CODE = '5578';
-
-        // ================================================================
-        //  INDEXEDDB STORAGE (stores ArrayBuffer, clones on retrieval)
-        // ================================================================
-        const DB_NAME = 'FaridLibraryDB';
-        const STORE_NAME = 'pdfs';
-
-        function openDB() {
-            return new Promise((resolve, reject) => {
-                if (!('indexedDB' in window) || window.indexedDB === null) {
-                    reject(new Error('IndexedDB is not supported in this browser.'));
-                    return;
-                }
-                const request = indexedDB.open(DB_NAME, 1);
-                request.onupgradeneeded = (ev) => {
-                    const db = ev.target.result;
-                    if (!db.objectStoreNames.contains(STORE_NAME)) {
-                        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-                    }
-                };
-                request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        async function storePDF(id, arrayBuffer) {
-            const db = await openDB();
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE_NAME, 'readwrite');
-                const store = tx.objectStore(STORE_NAME);
-                const request = store.put({ id, data: arrayBuffer });
-                request.onsuccess = () => resolve();
-                request.onerror = () => reject(request.error);
-                tx.oncomplete = () => db.close();
-            });
-        }
-
-        async function getPDF(id) {
-            const db = await openDB();
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE_NAME, 'readonly');
-                const store = tx.objectStore(STORE_NAME);
-                const request = store.get(id);
-                request.onsuccess = () => {
-                    const result = request.result;
-                    if (result) {
-                        // Clone the ArrayBuffer to avoid detachment issues
-                        const buffer = result.data;
-                        if (buffer instanceof ArrayBuffer) {
-                            // .slice(0) creates a new, independent ArrayBuffer
-                            const cloned = buffer.slice(0);
-                            resolve(cloned);
-                        } else {
-                            resolve(buffer);
-                        }
-                    } else {
-                        resolve(null);
-                    }
-                };
-                request.onerror = () => reject(request.error);
-                tx.oncomplete = () => db.close();
-            });
-        }
-
-        async function deletePDF(id) {
-            const db = await openDB();
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORE_NAME, 'readwrite');
-                const store = tx.objectStore(STORE_NAME);
-                const request = store.delete(id);
-                request.onsuccess = () => resolve();
-                request.onerror = () => reject(request.error);
-                tx.oncomplete = () => db.close();
-            });
-        }
-
-        // ================================================================
-        //  STATE
-        // ================================================================
-        let state = {
-            books: [],
-            stats: {
-                totalMinutesRead: 0,
-                lastReadDate: null,
-                dailyReadMinutes: 0,
-                streak: 0,
+        const curriculum = {
+            Monday: {
+                title: "Interpersonal & Executive Presence",
+                color: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+                topics: [
+                    "Active Listening & Pacing", "Vocal Tone & Modulation", "Command of Body Language",
+                    "Strategic Storytelling", "High-Impact Pitching", "Handling Executive Objections",
+                    "High-Stakes Negotiation", "Boardroom Presence & Stature", "Radical Candor Feedback",
+                    "Managing Upward to C-Suite", "High-Conflict Resolution", "Public Speaking Anxiety Control",
+                    "Psychological Persuasion", "Charismatic Leadership", "Driving Group Alignment",
+                    "Crisis Communication Strategy", "Executive Summarization", "Strategic Assertiveness",
+                    "Impromptu Spontaneous Speech", "Earning Trust Instantly", "Navigating Corporate Politics",
+                    "Interview & Talent Evaluation", "Directing Team Dynamics", "Inspiring and Selling Vision",
+                    "Legacy Network Building"
+                ],
+                descriptions: [
+                    "Mastering the cadence of speech, conversational pauses, and deep reflective processing to project executive weight.",
+                    "Optimizing tone depth, resonance, inflection control, and volume modification to hold presence in intense corporate negotiations.",
+                    "Controlling macro and micro gestures, physical posturing, open stances, and alpha spacing to command authority instantly.",
+                    "Structuring highly complex business scenarios into memorable narrative arcs using clear context-tension-resolution hooks.",
+                    "Formulating concise, punchy value propositions designed to capture investor and stakeholder buy-in within brief operational windows.",
+                    "Isolating root doubts behind resistance, remaining non-reactive, and deflecting strategic objections calmly using logic gates.",
+                    "Deploying adversarial alignment models, anchoring metrics, value creation trade-offs, and mutual leverage point strategies.",
+                    "Projecting calm confidence, steady spatial control, clean visual mechanics, and absolute stability during tense boardroom discussions.",
+                    "Delivering ultra-direct, actionable feedback mechanics that maximize professional growth while minimizing emotional friction.",
+                    "Synthesizing high-level data packages, predicting manager needs, and engineering seamless choices to guide decision-makers.",
+                    "Mediating deep internal business deadlocks, diffusing tactical pushback, and resolving structural team conflict systematically.",
+                    "Deconstructing the physical stress response, practicing dynamic box breathing, and executing mental grounding protocols.",
+                    "Leveraging behavioral economics triggers, social proof patterns, cognitive alignment cues, and scarcity mechanics ethically.",
+                    "Projecting internal energy outward, aligning authentic personal truths, and creating deep psychological safety across teams.",
+                    "Synchronizing divergent opinions into explicit unified goals, using strategic concession pathways to keep projects moving.",
+                    "Formulating real-time containment comms protocols, mitigating public relations friction, and maintaining executive composure.",
+                    "Boiling down millions of data matrix elements into 3 definitive executive takeaways optimized for accelerated decision-making.",
+                    "Expressing absolute professional boundary realities calmly, directly, and confidently without relying on emotional defensive traits.",
+                    "Structuring sudden, unprompted business presentations logically within 10 seconds using problem-solution templates.",
+                    "Establishing immediate technical credibility and genuine personal affinity by showing high emotional intelligence signals.",
+                    "Mapping latent stakeholder influence charts, protecting resource ownership, and driving agendas forward without friction.",
+                    "Deploying performance behavioral metrics to evaluate talent skill ceilings, cultural alignment, and executive drive accurately.",
+                    "Structuring clear task allocation pipelines, assigning responsibility matrices, and keeping highly functional groups on track.",
+                    "Translating massive enterprise plans into a clear, inspiring mission roadmap that rallies individual talent to execution.",
+                    "Fostering strategic long-term corporate relationships with mentors and industry founders to unlock geometric career options."
+                ]
+            },
+            Tuesday: {
+                title: "Digital Tools & Analytics",
+                color: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+                tools: [
+                    "Miro", "Miro", "Miro", "Miro", "Miro", 
+                    "Figma", "Figma", "Figma", "Figma", "Figma", 
+                    "Jira", "Jira", "Jira", "Jira", "Jira", 
+                    "Notion", "Notion", "Notion", "Notion", "Notion", 
+                    "Google Analytics", "Google Analytics", "Google Analytics", "Google Analytics", "Google Analytics"
+                ],
+                topics: [
+                    "Miro: Digital Workspace Mapping", "Miro: User Journey Plotting", "Miro: Product Ecosystem Ideation", "Miro: Strategic Brainstorming Structuring", "Miro: Whiteboard Wireframing Sync",
+                    "Figma: UI/UX Component Auditing", "Figma: Interactive High-Fidelity Prototyping", "Figma: Interface Friction Inspection", "Figma: UX Design System Management", "Figma: Responsive Screen Layout Logic",
+                    "Jira: Scrum Agile Workspace Architecture", "Jira: Epic & Backlog Prioritization Logic", "Jira: Sprint Lifecycle Management", "Jira: Software Developer Task Delegation", "Jira: Bottleneck Analytics Tracking",
+                    "Notion: Enterprise Wiki Design", "Notion: Internal Workspace OS Setup", "Notion: Collaborative Roadmap Logging", "Notion: Central Database Schema Architecture", "Notion: Dynamic Executive Documentation",
+                    "Google Analytics: Event Tracking Architecture", "Google Analytics: Conversion Funnel Analysis", "Google Analytics: User Acquisition Attributions", "Google Analytics: Engagement & Churn Diagnostics", "Google Analytics: Core E-Commerce Metric Logic"
+                ],
+                descriptions: [
+                    "Using Miro to design high-level visual canvases that clarify system boundaries, connect dependencies, and structure executive ideas.",
+                    "Plotting comprehensive, end-to-end user navigation flows visually in Miro to trace mental hooks and friction points before writing code.",
+                    "Architecting a bird's-eye canvas map of your diversified business products in Miro to locate structural cross-selling synergies.",
+                    "Conducting live collaborative strategy workshops in Miro, using time-boxed cards to categorize raw corporate ideas.",
+                    "Building low-fidelity screen concepts and UX framework boxes rapidly in Miro to quickly test logical functional positioning.",
+                    "Auditing user interfaces directly inside Figma by measuring padding rules, layout consistency, and button visibility logic.",
+                    "Engineering functional prototypes in Figma with clickable logic switches to simulate user flows realistically before development.",
+                    "Locating micro-interaction deadends and layout blockages in Figma designs to lower user cognitive cycles.",
+                    "Structuring cross-product master design assets inside Figma libraries to guarantee absolute visual branding continuity.",
+                    "Structuring software screen layouts inside Figma across desktop and mobile form-factors to analyze cross-device layout adaptation.",
+                    "Building clean, centralized Scrum workspaces in Jira to translate high-altitude strategy into granular execution tasks.",
+                    "Structuring macro project Epics and organizing product backlogs in Jira to separate urgent bugs from high-leverage updates.",
+                    "Configuring time-boxed active sprint iterations in Jira, mapping velocity targets, and monitoring development tasks daily.",
+                    "Writing explicit task parameters, user acceptance baselines, and setting clear velocity values to direct technical talent.",
+                    "Analyzing Jira burndown charts and cycle time performance data to eliminate technical blockers across development lines.",
+                    "Building a bulletproof company single-source-of-truth wiki in Notion to preserve institutional knowledge and standard workflows.",
+                    "Engineering a personalized executive dashboard inside Notion to track tasks, operational research, and vision markers seamlessly.",
+                    "Building a multi-view calendar, Kanban, and list portfolio tracker inside Notion to coordinate cross-product launching statuses.",
+                    "Designing linked table structures in Notion using advanced relation and rollup properties to connect goals directly to daily logs.",
+                    "Drafting clean, organized technical specifications, business briefs, and product rules optimized for fast team consumption.",
+                    "Deploying customized tracking events inside Google Analytics (GA4) to systematically capture exact user click interactions.",
+                    "Building step-by-step product checkout pipelines in Google Analytics to isolate drop-off points and calculate friction.",
+                    "Analyzing marketing traffic channels inside Google Analytics to see which referral vectors generate high-retention cohorts.",
+                    "Auditing user session duration, scroll depth, and interaction frequencies in Google Analytics to diagnose user churn causes.",
+                    "Tracking real-time purchases, subscription revenue trends, average order values, and conversion percentages in Google Analytics dashboards."
+                ]
+            },
+            Wednesday: {
+                title: "Corporate Strategy & Architecture",
+                color: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+                topics: [
+                    "Horizontal Integration", "Vertical Integration", "Corporate Value Chains",
+                    "Navigating Professional Failure", "Business Model Innovation", "Market Entry Strategies",
+                    "Inorganic Growth Dynamics", "M&A Target Evaluation", "Strategic Due Diligence",
+                    "Post-Merger Integration", "Corporate Capital Allocation", "Corporate Divestiture Strategy",
+                    "Joint Ventures & Alliances", "Competitive Moat Defense", "Global Expansion Vectors",
+                    "Conglomerate Discounts", "Revenue Diversification", "Shared Services Design",
+                    "Corporate Governance", "Financial Turnaround Plays", "Subsidiary Management",
+                    "Disruptive Threat Defense", "Scale Economies Optimization", "Corporate Venture Capital",
+                    "Governance-to-Execution"
+                ],
+                descriptions: [
+                    "Expanding business boundaries by acquiring or launching matching products within identical industry horizontal levels.",
+                    "Securing complete supply control by absorbing manufacturing steps upstream or capturing customer retail channels downstream.",
+                    "Dissecting every functional layer of an enterprise to optimize efficiency, cut cost, and maximize end-value production.",
+                    "Anesthetizing operational breakdowns objectively, extracting systemic fixes, and re-calibrating personal strategy rapidly.",
+                    "Rethinking value capture, distribution infrastructure, monetization metrics, and cost-structure logic to create blue oceans.",
+                    "Formulating analytical market expansion blueprints checking regulatory terrain, pricing models, and competitor footing.",
+                    "Accelerating company scaling using targeted corporate finance transactions, mergers, and external asset acquisitions.",
+                    "Auditing tech startups and product suites using strict financial, structural, and cultural viability alignment scorecards.",
+                    "Conducting intensive validation audits across financial logs, technical debts, product scaling code, and legal baselines.",
+                    "Unifying divergent software systems, organizational charts, corporate operations, and team cultures following transactions.",
+                    "Orchestrating investment, talent distribution, and asset funding across business units to secure peak corporate returns.",
+                    "Shedding underperforming business entities, outdated legacy code bases, or non-core assets to lean down operations.",
+                    "Structuring shared-risk business agreements and co-development ventures to enter highly protected markets quickly.",
+                    "Building deep structural advantages around brands, system dependencies, network dynamics, and intellectual properties.",
+                    "Adapting product ecosystems to fit international regulatory regimes, localized user expectations, and global markets.",
+                    "Evaluating market pricing variances where diversified parent systems trade lower than the sum of standalone pieces.",
+                    "Architecting alternative, independent revenue channels to safeguard enterprise health against individual product drops.",
+                    "Centralizing operational units like Legal, advanced Data Analytics, and HR to eliminate structural overhead duplication.",
+                    "Setting clear executive reporting structures, compliance lines, internal logic policies, and ethical board boundaries.",
+                    "Diagnosing bleeding margins, restructured asset lines, optimization funnels, and rebuilding broken operational frameworks.",
+                    "Balancing local operational independence against high-level financial and brand alignment constraints set by the parent center.",
+                    "Isolating emerging lower-tier market options and launching agile internal units to defeat fast-moving startup threats.",
+                    "Refining operations so production costs per unit continuously scale downward as total transactional volume expands.",
+                    "Investing corporate cash directly into early-stage external tech startups to buy premature insight into new spaces.",
+                    "Translating abstract corporate board parameters into day-to-day metrics and structured targets for product teams."
+                ]
+            },
+            Thursday: {
+                title: "Core Grounding & Philosophy",
+                color: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                topics: [
+                    "Intentional Self-Mastery", "Emotional Grit & Resilience", "Navigating Professional Failure",
+                    "Imposter Syndrome Defense", "Ethical Decision-Making", "Stoic Mental Frameworks",
+                    "Intellectual Humility", "Detaching from Chaos", "Deep Work Conditioning",
+                    "Integrity Under Pressure", "Core Purpose Discovery", "Wisdom Frameworks",
+                    "Legacy-Driven Vision", "Patience in Compounding", "User Persona Mapping",
+                    "Embracing Constraints", "The Psychology of Ego", "Authentic Leadership",
+                    "Constructive Solitude", "Intentional Boundaries", "Processing Criticism Calmly",
+                    "Clarity Over Urgency", "Serving Others First", "Adapting to Macro Chaos",
+                    "Unshakeable Internal Peace"
+                ],
+                descriptions: [
+                    "Structuring absolute mastery over daily choices, operational focus, and emotional clarity to secure top execution.",
+                    "Building psychological tissue capable of handling continuous operational resistance, high stakes, and marketplace stress.",
+                    "Reviewing system crashes or tactical losses through an objective lens to find systemic errors without emotional blame.",
+                    "Isolating illogical self-doubt by looking at objective historical performance data, tracking actual metrics.",
+                    "Balancing commercial hyper-growth pushes against explicit moral lines to construct an enduring brand footprint.",
+                    "Practicing negative visualization protocols, managing reaction boundaries, and isolating internal thoughts from outside events.",
+                    "Recognizing personal blind spots, maintaining open learning channels, and actively updating mental models with fresh data.",
+                    "Developing tactical sensory filters to step back, maintain high-altitude perspective, and focus amidst daily noise.",
+                    "Conditioning neurological focus to execute unbroken multi-hour strategic deep-dives without giving in to distraction.",
+                    "Refusing tactical shortcuts, maintaining total transparency, and holding core professional ethics during critical corporate crises.",
+                    "Stripping away ego to isolate the core operational mission that anchors your personal multi-sector business aspirations.",
+                    "Analyzing philosophical texts like 'Zavia' by Ishfaq Ahmad to ground tactical technology strategy within deep wisdom.",
+                    "Engineering products and corporate systems built to generate long-term structural value that outlives career cycles.",
+                    "Resisting instant-gratification loops to invest in compounding strategic initiatives that show massive tail-end returns.",
+                    "Deconstructing user psychological realities deeply to build product empathy and understand human baseline needs.",
+                    "Viewing strict budget ceilings, tiny tech windows, or limited team sizes as creative catalysts that force hyper-efficiency.",
+                    "Isolating personal pride triggers to prevent emotional bias from clouding data-driven portfolio management pivots.",
+                    "Leading teams by exhibiting absolute alignment between internal principles, clear outward speech, and daily behaviors.",
+                    "Scheduling regular screen-free periods to allow cognitive processing, strategic synthesis, and mental reset.",
+                    "Defining absolute boundaries regarding attention focus, timeline access, and operational noise to guard creative output.",
+                    "Extracting actionable data patterns from public feedback and negative reviews while filtering out emotional delivery.",
+                    "Refusing to treat every minor operational alert as a true priority, holding space for high-leverage strategic work.",
+                    "Refining your products and leadership styles around maximizing actual user success, value capture, and team growth.",
+                    "Maintaining absolute confidence and strategic navigation flexibility when international markets or macro shifts alter plans.",
+                    "Cultivating a steady, quiet internal operational state that remains untouched by competitive friction or daily firestorms."
+                ]
+            },
+            Friday: {
+                title: "Product Management Mechanics",
+                color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                topics: [
+                    "Hook Model Basics", "Internal vs External Triggers", "Friction Reduction (Action)",
+                    "Variable Reward Engines", "Stored Value (Investment)", "Customer Lifetime Value (CLTV)",
+                    "Viral Cycle Time Optimization", "Churn Diagnosis & Fixes", "Onboarding Optimization",
+                    "Habit Testing Systems", "Infinite vs Finite Variability", "Network Effect Mechanics",
+                    "Vitamin to Painkiller Pivots", "User Persona Mapping", "Quant User Research",
+                    "Product-Market Fit Signals", "Value Proposition Design", "Monetization Architecture",
+                    "Feature Expansion Loops", "UX Psychological Laws", "Gamification Frameworks",
+                    "Cognitive App Heuristics", "Technical Debt Management", "Product Defensibility",
+                    "North Star Metric Design"
+                ],
+                descriptions: [
+                    "Mastering the 4-phase framework (Trigger, Action, Variable Reward, Investment) used to engineer digital habit loops.",
+                    "Mapping immediate user sensory prompts (notifications) to clear internal negative emotional states (boredom, anxiety).",
+                    "Systematically stripping out brain cycles, physical steps, and options to maximize the probability of user execution.",
+                    "Designing unpredictable user validation, material, or self-mastery loops to supercharge user dopamine anticipation.",
+                    "Encouraging users to leave behind data, files, or reputation equity to increase future trigger value and exit barriers.",
+                    "Modeling compounding cohort monetization trajectories against front-end customer acquisition cost boundaries.",
+                    "Compressing the timeline required for an existing active user to organically invite and activate a new peer segment.",
+                    "Isolating the precise operational steps and interface friction points where users lose interest and drop off forever.",
+                    "Designing frictionless introductory app pathways that guide a user to their first 'Aha!' moment within seconds.",
+                    "Implementing data analytics pipelines to track power user cohorts, map habit paths, and update interfaces accordingly.",
+                    "Evaluating whether product rewards get stale over time or leverage infinite human content dynamics to stay fresh.",
+                    "Designing systems where each incremental user sign-up mathematically increases the overall utility of the platform.",
+                    "Transforming nice-to-have digital utilities into essential, pain-relieving software dependencies via habit integration.",
+                    "Building archetype profiles grounded in hard usage metrics, behavioral attributes, and core retention goals.",
+                    "Deploying large-scale behavioral metrics surveys, usage statistics, and engagement data tables to uncover user truths.",
+                    "Measuring retention plateaus, organic net promoter scores, and market demand indicators to clear product scaling stages.",
+                    "Aligning specific feature bundles directly against the core psychological pains and workflow needs of your users.",
+                    "Testing paywall timings, tiered subscription structures, and consumption usage logic to optimize platform earnings.",
+                    "Engineering viral product features where standard user actions naturally invite or engage external user groups.",
+                    "Applying psychological laws (Hick's Law, Fitts's Law, Zeigarnik Effect) to shape software interface behavior.",
+                    "Integrating balanced progression structures, challenge tiers, and achievement loops without degrading app utility.",
+                    "Structuring interface layouts to reduce user cognitive load, leveraging existing interaction patterns.",
+                    "Balancing fast feature iteration speed against code architecture cleanup to keep long-term system scaling stable.",
+                    "Building deep structural moats using direct network dependencies, proprietary algorithms, and high data switching costs.",
+                    "Isolating the single core performance metric that best tracks real long-term value delivery across your user base."
+                ]
+            },
+            Saturday: {
+                title: "High-Leverage Frameworks",
+                color: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+                topics: [
+                    "MECE Issue Trees", "BCG Growth-Share Matrix", "Porter's Five Forces",
+                    "SWOT & TOWS Analysis", "PESTLE Context Analysis", "RICE Prioritization",
+                    "McKinsey 7S Model", "Blue Ocean Strategy", "GE-McKinsey Matrix",
+                    "Value Chain Analysis", "OKR Cascading Systems", "Ansoff Growth Matrix",
+                    "Balanced Scorecard", "VRIO Moat Framework", "Business Model Canvas",
+                    "First-Principles Thinking", "Root Cause (5 Whys) Analysis", "Core Competency Auditing",
+                    "Scenario Planning Models", "Kano Product Model", "Input vs Output Metrics",
+                    "Strategic Inflection Points", "Corporate Moat Auditing", "Pareto (80/20) Execution",
+                    "Executive Intelligence Mastery"
+                ],
+                descriptions: [
+                    "Structuring complex business problems into Mutually Exclusive and Collectively Exhaustive logical branches.",
+                    "Mapping product portfolio lines by market share vs market growth to identify Cash Cows, Stars, Question Marks, and Dogs.",
+                    "Diagnosing market landscape attractiveness via supplier power, buyer options, substitution threats, entry bars, and rivalry.",
+                    "Converting basic internal/external factor lists into operational execution strategies using matrix pairing lines.",
+                    "Auditing macro environmental realities covering Political, Economic, Social, Technological, Legal, and Environmental forces.",
+                    "Scoring software engineering backlogs objectively using data inputs: Reach * Impact * Confidence / Effort calculations.",
+                    "Aligning Enterprise operations by checking fit across Strategy, Structure, Systems, Shared Values, Style, Staff, and Skills.",
+                    "Unlocking uncontested market territories by breaking value-cost trade-offs and eliminating legacy features.",
+                    "Evaluating business portfolio units based on industry attractiveness scores against competitive unit strength vectors.",
+                    "Dissecting enterprise operational sequences to find, optimize, and harvest core margin-producing blocks.",
+                    "Aligning high-level corporate visions directly with daily product milestones using measurable key results.",
+                    "Classifying expansion paths into Market Penetration, Market Development, Product Development, or Diversification directions.",
+                    "Balancing financial metrics against customer feedback, internal process metrics, and learning parameters.",
+                    "Testing strategic resources against Value, Rarity, Inimitability, and Organizational capture metrics to secure advantages.",
+                    "Deconstructing a complete corporate engine layout onto a one-page grid covering key partners, activities, paths, and costs.",
+                    "Deconstructing business systems down to their baseline truths and building unique strategies up from scratch.",
+                    "Drilling down past surface-level operational symptoms to expose core systemic design flaws via iterative interrogation.",
+                    "Identifying and locking down unique strategic advantages that cannot be copied by marketplace competitors.",
+                    "Mapping out diverse future market realities to stress-test your corporate strategy against unexpected events.",
+                    "Classifying product features into Basic Needs, Performance Factors, and Delight Elements to optimize user impact.",
+                    "Isolating early leading indicators (input activities) that mathematically drive lag results (revenue, retention logs).",
+                    "Detecting structural changes in tech landscapes early to pivot product strategy before market decline loops take hold.",
+                    "Auditing your strategic moats continuously against competitive copying, disruption speed, and market erosion factors.",
+                    "Concentrating capital and developer resources onto the top 20% of product features that drive 80% of user retention.",
+                    "Synthesizing diverse functional generalist knowledge blocks to direct enterprise ecosystems with absolute precision."
+                ]
+            },
+            Sunday: {
+                title: "LinkedIn & Footprint Management",
+                color: "bg-teal-500/10 text-teal-400 border-teal-500/20",
+                topics: Array(25).fill("Ecosystem Growth & Strategic Networking"),
+                descriptions: Array(25).fill("Execute professional personal branding tasks: Update, clean, and optimize your portfolio website's text assets, compose one high-impact LinkedIn post breaking down a specific tech framework, and perform high-context custom networking messages to 3-5 target corporate mentors and product leaders to scale real alliances.")
             }
         };
 
-        let readingState = {
-            bookId: null,
-            currentPage: 1,
-            totalPages: 1,
-            isReading: false,
-            timerInterval: null,
-            seconds: 0,
-            isPaused: false,
-            pdfDoc: null,
-        };
+        // Date & Metric State Logic (Locked to Year 2026 Sandbox Baseline)
+        const currentZoneTime = new Date();
+        const baseYear = 2026;
+        const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const todayDayName = dayNames[currentZoneTime.getDay()];
 
-        let editTargetId = null;
+        // Generate static alignment indexing [0 to 24] mapped across the year
+        const daysSinceStartOfYear = Math.floor((currentZoneTime - new Date(baseYear, 0, 1)) / (1000 * 60 * 60 * 24));
+        const activeTopicIndex = Math.abs(daysSinceStartOfYear % 25); 
 
-        // ================================================================
-        //  DATA MANAGEMENT
-        // ================================================================
-        function loadData() {
-            try {
-                const raw = localStorage.getItem(APP_KEY);
-                if (raw) {
-                    const parsed = JSON.parse(raw);
-                    state = parsed;
-                    if (!state.stats) {
-                        state.stats = { totalMinutesRead: 0, lastReadDate: null, dailyReadMinutes: 0, streak: 0 };
-                    }
-                    state.books = state.books.map(b => ({
-                        ...b,
-                        currentPage: b.currentPage || 1,
-                        totalPages: b.totalPages || 1,
-                        readingTime: b.readingTime || 0,
-                        lastRead: b.lastRead || null,
-                        addedDate: b.addedDate || new Date().toISOString(),
-                    }));
-                    const today = new Date().toDateString();
-                    if (state.stats.lastReadDate !== today) {
-                        state.stats.dailyReadMinutes = 0;
-                        state.stats.lastReadDate = today;
-                    }
-                    saveData();
-                } else {
-                    resetData();
-                }
-            } catch (e) {
-                console.warn('Data load error, resetting', e);
-                resetData();
-            }
-            loadAllPDFs().then(() => {
-                updateAll();
-            }).catch(err => {
-                showToast('⚠️ Failed to load PDF data: ' + err.message, 'error');
-            });
+        // Live Clock Ticker Object Loop
+        function updateTicker() {
+            const now = new Date();
+            const formatted = now.toLocaleDateString('en-US', { 
+                weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' 
+            }) + ' | ' + now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('current-timestamp').textContent = formatted;
         }
+        setInterval(updateTicker, 1000);
+        updateTicker();
 
-        function resetData() {
-            state = {
-                books: [],
-                stats: {
-                    totalMinutesRead: 0,
-                    lastReadDate: new Date().toDateString(),
-                    dailyReadMinutes: 0,
-                    streak: 0,
-                }
-            };
-            saveData();
-        }
-
-        function saveData() {
-            try {
-                const toSave = {
-                    books: state.books.map(b => {
-                        const { pdfData, ...rest } = b;
-                        return rest;
-                    }),
-                    stats: state.stats
-                };
-                localStorage.setItem(APP_KEY, JSON.stringify(toSave));
-            } catch (e) {
-                console.error('Save error', e);
-            }
-        }
-
-        async function loadAllPDFs() {
-            for (const book of state.books) {
-                try {
-                    const data = await getPDF(book.id);
-                    if (data) {
-                        book.pdfData = data; // cloned ArrayBuffer
-                    } else {
-                        book.pdfData = null;
-                    }
-                } catch (e) {
-                    book.pdfData = null;
-                    console.warn(`Failed to load PDF for ${book.name}:`, e);
-                }
-            }
-        }
-
-        function getBook(id) {
-            return state.books.find(b => b.id === id);
-        }
-
-        function generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-        }
-
-        // ================================================================
-        //  STATS HELPERS
-        // ================================================================
-        function updateStreak() {
-            const today = new Date().toDateString();
-            const last = state.stats.lastReadDate;
-            if (last === today) return;
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            if (last === yesterday.toDateString()) {
-                state.stats.streak += 1;
-            } else if (last !== today) {
-                state.stats.streak = 0;
-            }
-            state.stats.lastReadDate = today;
-            saveData();
-        }
-
-        function addReadingTime(minutes) {
-            if (minutes <= 0) return;
-            state.stats.totalMinutesRead += minutes;
-            state.stats.dailyReadMinutes += minutes;
-            updateStreak();
-            saveData();
-            updateAll();
-            checkDailyGoal();
-        }
-
-        function getTodayMinutes() {
-            const today = new Date().toDateString();
-            if (state.stats.lastReadDate !== today) {
-                state.stats.dailyReadMinutes = 0;
-                state.stats.lastReadDate = today;
-                saveData();
-            }
-            return state.stats.dailyReadMinutes || 0;
-        }
-
-        // ================================================================
-        //  DAILY GOAL & NOTIFICATIONS
-        // ================================================================
-        function checkDailyGoal() {
-            const minutes = getTodayMinutes();
-            if (minutes >= DAILY_GOAL) {
-                document.getElementById('notifBadge').style.display = 'none';
-                return true;
-            }
-            document.getElementById('notifBadge').style.display = 'flex';
-            document.getElementById('notifBadge').textContent = '!';
-            return false;
-        }
-
-        function sendReminder() {
-            const minutes = getTodayMinutes();
-            if (minutes >= DAILY_GOAL) return;
-            if (Notification.permission === 'granted') {
-                const remaining = Math.round(DAILY_GOAL - minutes);
-                new Notification('📚 Farid Library', {
-                    body: `You've read ${Math.round(minutes)} min today. ${remaining} min more to reach your daily goal!`,
-                    icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234F46E5"%3E%3Cpath d="M4 6h16v12H4z"/%3E%3C/svg%3E',
-                    silent: false,
-                });
-            } else if (Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-        }
-
-        function startNotificationScheduler() {
-            setInterval(() => {
-                const minutes = getTodayMinutes();
-                if (minutes < DAILY_GOAL) {
-                    sendReminder();
-                    showToast('⏰ Reminder: Read ' + Math.round(DAILY_GOAL - minutes) + ' more minutes today!', 'warning');
-                }
-            }, NOTIF_CHECK_INTERVAL);
-
-            document.addEventListener('visibilitychange', () => {
-                if (!document.hidden) {
-                    updateAll();
-                }
-            });
-
-            if (Notification.permission === 'default') {
-                setTimeout(() => Notification.requestPermission(), 3000);
-            }
-        }
-
-        function toggleNotifications() {
-            if (Notification.permission === 'granted') {
-                sendReminder();
-                showToast('📬 Reminder sent!', 'success');
-            } else if (Notification.permission === 'default') {
-                Notification.requestPermission().then(perm => {
-                    if (perm === 'granted') {
-                        showToast('🔔 Notifications enabled!', 'success');
-                        sendReminder();
-                    } else {
-                        showToast('⚠️ Please allow notifications in browser settings.', 'error');
-                    }
-                });
-            } else {
-                showToast('⚠️ Notifications blocked. Please enable in browser settings.', 'error');
-            }
-        }
-
-        // ================================================================
-        //  TOAST
-        // ================================================================
-        let toastTimeout = null;
-
-        function showToast(message, type = 'info') {
-            const el = document.getElementById('toast');
-            el.className = 'toast ' + type;
-            el.innerHTML = message;
-            el.classList.add('show');
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                el.classList.remove('show');
-            }, 3500);
-        }
-
-        // ================================================================
-        //  RENDER FUNCTIONS
-        // ================================================================
-        function renderHome() {
-            const grid = document.getElementById('homeBookGrid');
-            const empty = document.getElementById('homeEmptyState');
-            const countLabel = document.getElementById('bookCountLabel');
-
-            if (state.books.length === 0) {
-                grid.innerHTML = '';
-                empty.style.display = 'block';
-                countLabel.textContent = '0 books';
-                document.getElementById('continueReadingSection').innerHTML = '';
-                return;
-            }
-            empty.style.display = 'none';
-            countLabel.textContent = state.books.length + ' book' + (state.books.length > 1 ? 's' : '');
-
-            const contSection = document.getElementById('continueReadingSection');
-            const lastBook = state.books.find(b => b.lastRead) || state.books[0];
-            if (lastBook) {
-                contSection.innerHTML = `
-              <div class="section-title"><i class="fas fa-play-circle" style="color:var(--secondary);"></i> Continue Reading</div>
-              <div class="continue-card" onclick="openReading('${lastBook.id}')">
-                <div class="continue-icon"><i class="fas fa-book-reader"></i></div>
-                <div class="continue-info">
-                  <div class="continue-title">${escapeHtml(lastBook.name)}</div>
-                  <div class="continue-desc">
-                    <span>${escapeHtml(lastBook.writer)}</span>
-                    <span>•</span>
-                    <span><i class="fas fa-file-pdf"></i> Page ${lastBook.currentPage || 1}</span>
-                    ${lastBook.readingTime ? `<span>• <i class="fas fa-clock"></i> ${Math.round(lastBook.readingTime)}m</span>` : ''}
-                  </div>
-                </div>
-                <div class="continue-arrow"><i class="fas fa-chevron-right"></i></div>
-              </div>
-            `;
-            } else {
-                contSection.innerHTML = '';
-            }
-
-            grid.innerHTML = state.books.map(book => `
-            <div class="book-card" onclick="openReading('${book.id}')">
-              <div class="book-cover" style="background:${getBookColor(book.id)};">
-                <span class="book-icon"><i class="fas fa-book"></i></span>
-                <span class="cover-text">${escapeHtml(book.name)}</span>
-                ${book.currentPage && book.totalPages ? `<span class="progress-badge">${Math.round((book.currentPage/book.totalPages)*100)}%</span>` : ''}
-              </div>
-              <div class="book-info">
-                <div class="book-name">${escapeHtml(book.name)}</div>
-                <div class="book-writer">${escapeHtml(book.writer)}</div>
-                <div class="book-meta">
-                  <i class="fas fa-file-pdf"></i>
-                  <span>${book.totalPages ? book.totalPages + ' pgs' : 'PDF'}</span>
-                  ${book.readingTime ? `<span>• <i class="fas fa-clock"></i> ${Math.round(book.readingTime)}m</span>` : ''}
-                </div>
-              </div>
-            </div>
-          `).join('');
-        }
-
-        function renderStats() {
-            document.getElementById('statBooks').textContent = state.books.length;
-            const todayMin = getTodayMinutes();
-            document.getElementById('statMinutes').innerHTML = Math.round(todayMin) + '<span class="unit">m</span>';
-            document.getElementById('statStreak').textContent = state.stats.streak || 0;
-            checkDailyGoal();
-        }
-
-        function renderAddList() {
-            const container = document.getElementById('addBookList');
-            const empty = document.getElementById('addEmptyState');
-            const count = document.getElementById('addBookCount');
-
-            if (state.books.length === 0) {
-                container.innerHTML = '';
-                empty.style.display = 'block';
-                count.textContent = '0 books';
-                return;
-            }
-            empty.style.display = 'none';
-            count.textContent = state.books.length + ' book' + (state.books.length > 1 ? 's' : '');
-
-            container.innerHTML = state.books.map(book => `
-            <div class="book-list-item">
-              <div class="item-cover" style="background:${getBookColor(book.id)};">
-                <i class="fas fa-book" style="font-size:14px;"></i>
-              </div>
-              <div class="item-info">
-                <div class="item-name">${escapeHtml(book.name)}</div>
-                <div class="item-writer">${escapeHtml(book.writer)}</div>
-              </div>
-              <div class="item-actions">
-                <button class="btn-delete" onclick="deleteBook('${book.id}')" title="Delete">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </div>
-          `).join('');
-        }
-
-        function renderEditList() {
-            const container = document.getElementById('editBookList');
-            const empty = document.getElementById('editEmptyState');
-            const count = document.getElementById('editBookCount');
-
-            if (state.books.length === 0) {
-                container.innerHTML = '';
-                empty.style.display = 'block';
-                count.textContent = '0 books';
-                return;
-            }
-            empty.style.display = 'none';
-            count.textContent = state.books.length + ' book' + (state.books.length > 1 ? 's' : '');
-
-            container.innerHTML = state.books.map(book => `
-            <div class="book-list-item">
-              <div class="item-cover" style="background:${getBookColor(book.id)};">
-                <i class="fas fa-book" style="font-size:14px;"></i>
-              </div>
-              <div class="item-info">
-                <div class="item-name">${escapeHtml(book.name)}</div>
-                <div class="item-writer">${escapeHtml(book.writer)}</div>
-              </div>
-              <div class="item-actions">
-                <button class="btn-edit" onclick="openEditModal('${book.id}')" title="Edit">
-                  <i class="fas fa-pen"></i>
-                </button>
-              </div>
-            </div>
-          `).join('');
-        }
-
-        function updateAll() {
-            renderStats();
-            renderHome();
-            renderAddList();
-            renderEditList();
-            if (readingState.bookId) {
-                const book = getBook(readingState.bookId);
-                if (book) {
-                    document.getElementById('readingTitle').textContent = book.name;
-                }
-            }
-        }
-
-        // ================================================================
-        //  HELPERS
-        // ================================================================
-        function getBookColor(id) {
-            const colors = [
-                '#4F46E5', '#7C3AED', '#EC4899', '#EF4444',
-                '#F59E0B', '#10B981', '#06B6D4', '#3B82F6',
-                '#8B5CF6', '#F472B6', '#FB923C', '#34D399',
-                '#22D3EE', '#60A5FA', '#A78BFA', '#F87171',
-            ];
-            let hash = 0;
-            for (let i = 0; i < id.length; i++) {
-                hash = (hash + id.charCodeAt(i) * 31) % colors.length;
-            }
-            return colors[Math.abs(hash)];
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // ================================================================
-        //  ADD BOOK (reads as ArrayBuffer)
-        // ================================================================
-        document.getElementById('addBookForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const name = document.getElementById('bookName').value.trim();
-            const writer = document.getElementById('bookWriter').value.trim();
-            const desc = document.getElementById('bookDesc').value.trim();
-            const fileInput = document.getElementById('pdfFile');
-
-            if (!name || !writer) {
-                showToast('⚠️ Please fill in name and writer.', 'error');
-                return;
-            }
-            if (!fileInput.files || !fileInput.files[0]) {
-                showToast('⚠️ Please select a PDF file.', 'error');
-                return;
-            }
-
-            const file = fileInput.files[0];
-            if (file.type !== 'application/pdf') {
-                showToast('⚠️ Please select a valid PDF file.', 'error');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = async function(ev) {
-                try {
-                    const arrayBuffer = ev.target.result; // ArrayBuffer
-
-                    const newBook = {
-                        id: generateId(),
-                        name: name,
-                        writer: writer,
-                        description: desc || '',
-                        pdfData: arrayBuffer, // will be stored separately
-                        currentPage: 1,
-                        totalPages: 1,
-                        readingTime: 0,
-                        lastRead: null,
-                        addedDate: new Date().toISOString(),
-                    };
-
-                    // Store in IndexedDB
-                    await storePDF(newBook.id, arrayBuffer);
-
-                    // Add to state (we don't keep the buffer in state to avoid memory duplication)
-                    state.books.unshift({
-                        ...newBook,
-                        pdfData: null // we will fetch it on reading
-                    });
-                    saveData();
-                    updateAll();
-                    document.getElementById('addBookForm').reset();
-                    document.getElementById('fileWrapper').classList.remove('has-file');
-                    document.getElementById('fileNameDisplay').textContent = '';
-                    document.getElementById('fileLabel').textContent = 'Choose PDF file';
-                    showToast('✅ Book "' + name + '" added successfully!', 'success');
-
-                    // Try to get page count (using the arrayBuffer directly)
-                    loadPdfMetadata(newBook.id, arrayBuffer);
-                } catch (err) {
-                    console.error('Add book error:', err);
-                    showToast('⚠️ Error adding book: ' + err.message, 'error');
-                }
-            };
-            reader.onerror = function(err) {
-                showToast('⚠️ Error reading file: ' + err.message, 'error');
-            };
-            reader.readAsArrayBuffer(file);
+        // Populate Matrix Selector Dropdown
+        const selectMenu = document.getElementById('topic-selector');
+        dayNames.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = `${d === "Sunday" ? "🔒 " : ""}${d} Matrix`;
+            if(d === todayDayName) opt.selected = true;
+            selectMenu.appendChild(opt);
         });
 
-        // File input label update
-        document.getElementById('pdfFile').addEventListener('change', function() {
-            const wrapper = document.getElementById('fileWrapper');
-            const label = document.getElementById('fileLabel');
-            const display = document.getElementById('fileNameDisplay');
-            if (this.files && this.files[0]) {
-                wrapper.classList.add('has-file');
-                const name = this.files[0].name;
-                display.textContent = name;
-                label.textContent = '📄';
-            } else {
-                wrapper.classList.remove('has-file');
-                display.textContent = '';
-                label.textContent = 'Choose PDF file';
-            }
-        });
+        selectMenu.addEventListener('change', (e) => renderMatrixDays(e.target.value));
 
-        // ================================================================
-        //  PDF METADATA (page count)
-        // ================================================================
-        async function loadPdfMetadata(bookId, arrayBuffer) {
-            try {
-                const pdfjsLib = window.pdfjsLib;
-                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                const book = getBook(bookId);
-                if (book) {
-                    book.totalPages = pdf.numPages;
-                    saveData();
-                    updateAll();
-                }
-            } catch (e) {
-                console.warn('Could not load PDF metadata:', e);
-            }
-        }
-
-        // ================================================================
-        //  DELETE BOOK
-        // ================================================================
-        async function deleteBook(id) {
-            if (!confirm('Delete this book?')) return;
-
-            const code = prompt('Enter security code (5578) to delete:');
-            if (code !== SECURITY_CODE) {
-                showToast('⚠️ Incorrect security code.', 'error');
-                return;
-            }
-
-            const book = getBook(id);
-            if (!book) return;
-
-            try {
-                await deletePDF(id);
-            } catch (e) {
-                showToast('⚠️ Could not delete PDF: ' + e.message, 'error');
-                return;
-            }
-
-            state.books = state.books.filter(b => b.id !== id);
-            if (readingState.bookId === id) {
-                closeReading();
-            }
-            saveData();
-            updateAll();
-            showToast('🗑️ "' + book.name + '" deleted.', 'success');
-        }
-
-        // ================================================================
-        //  EDIT MODAL
-        // ================================================================
-        function openEditModal(id) {
-            const book = getBook(id);
-            if (!book) return;
-
-            editTargetId = id;
-            document.getElementById('editBookId').value = id;
-            document.getElementById('editBookName').value = book.name;
-            document.getElementById('editBookWriter').value = book.writer;
-            document.getElementById('editBookDesc').value = book.description || '';
-            document.getElementById('editSecurityCode').value = '';
-
-            document.getElementById('editModal').classList.add('open');
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').classList.remove('open');
-            editTargetId = null;
-        }
-
-        document.getElementById('editForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const id = document.getElementById('editBookId').value;
-            const code = document.getElementById('editSecurityCode').value.trim();
-            if (code !== SECURITY_CODE) {
-                showToast('⚠️ Incorrect security code. Please enter 5578.', 'error');
-                return;
-            }
-
-            const book = getBook(id);
-            if (!book) return;
-
-            const name = document.getElementById('editBookName').value.trim();
-            const writer = document.getElementById('editBookWriter').value.trim();
-            const desc = document.getElementById('editBookDesc').value.trim();
-
-            if (!name || !writer) {
-                showToast('⚠️ Name and writer are required.', 'error');
-                return;
-            }
-
-            book.name = name;
-            book.writer = writer;
-            book.description = desc;
-
-            saveData();
-            updateAll();
-            closeEditModal();
-            showToast('✅ Book updated successfully!', 'success');
-        });
-
-        async function deleteBookFromEdit() {
-            const id = document.getElementById('editBookId').value;
-            const code = document.getElementById('editSecurityCode').value.trim();
-            if (code !== SECURITY_CODE) {
-                showToast('⚠️ Incorrect security code. Please enter 5578.', 'error');
-                return;
-            }
-            if (!confirm('Permanently delete this book?')) return;
-
-            const book = getBook(id);
-            if (!book) return;
-
-            try {
-                await deletePDF(id);
-            } catch (e) {
-                showToast('⚠️ Could not delete PDF: ' + e.message, 'error');
-                return;
-            }
-
-            state.books = state.books.filter(b => b.id !== id);
-            if (readingState.bookId === id) {
-                closeReading();
-            }
-            saveData();
-            updateAll();
-            closeEditModal();
-            showToast('🗑️ "' + book.name + '" deleted.', 'success');
-        }
-
-        document.getElementById('editModal').addEventListener('click', function(e) {
-            if (e.target === this) closeEditModal();
-        });
-
-        // ================================================================
-        //  READING VIEW
-        // ================================================================
-        async function openReading(id) {
-            const book = getBook(id);
-            if (!book) {
-                showToast('⚠️ Book not found.', 'error');
-                return;
-            }
-
-            // Fetch PDF from IndexedDB if we don't have it
-            let pdfData = book.pdfData;
-            if (!pdfData) {
-                try {
-                    pdfData = await getPDF(id);
-                    if (!pdfData) {
-                        showToast('⚠️ PDF data not found in storage.', 'error');
-                        return;
-                    }
-                    // Keep the cloned buffer in memory for subsequent page rendering
-                    book.pdfData = pdfData;
-                } catch (e) {
-                    showToast('⚠️ Error loading PDF: ' + e.message, 'error');
-                    return;
-                }
-            }
-
-            if (readingState.bookId) {
-                saveReadingProgress();
-            }
-
-            readingState.bookId = id;
-            readingState.currentPage = book.currentPage || 1;
-            readingState.totalPages = book.totalPages || 1;
-            readingState.seconds = 0;
-            readingState.isPaused = false;
-            readingState.isReading = false;
-
-            document.getElementById('readingTitle').textContent = book.name;
-            document.getElementById('readingOverlay').classList.add('open');
-            document.getElementById('pageInput').value = readingState.currentPage;
-            document.getElementById('totalPages').textContent = readingState.totalPages || '?';
-            document.getElementById('readingTimeDisplay').textContent = '00:00';
-            document.getElementById('timerIcon').className = 'fas fa-play';
-
-            document.getElementById('pdfPages').innerHTML = '';
-            document.getElementById('pdfLoading').style.display = 'flex';
-
-            try {
-                const pdfjsLib = window.pdfjsLib;
-                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-                const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
-                readingState.pdfDoc = pdf;
-                readingState.totalPages = pdf.numPages;
-                book.totalPages = pdf.numPages;
-                document.getElementById('totalPages').textContent = pdf.numPages;
-
-                if (readingState.currentPage > pdf.numPages) {
-                    readingState.currentPage = 1;
-                    book.currentPage = 1;
-                }
-
-                saveData();
-                await renderPdfPage(readingState.currentPage);
-                document.getElementById('pdfLoading').style.display = 'none';
-
-                startReadingTimer();
-
-                book.lastRead = new Date().toISOString();
-                saveData();
-                updateAll();
-
-            } catch (e) {
-                console.error('PDF load error', e);
-                document.getElementById('pdfLoading').innerHTML = `
-              <i class="fas fa-exclamation-triangle" style="color:#F87171;"></i>
-              Could not load PDF. The file may be corrupted.
-              <br><span style="font-size:12px;opacity:0.6;">${e.message}</span>
-            `;
-                showToast('⚠️ Error loading PDF: ' + e.message, 'error');
-            }
-        }
-
-        async function renderPdfPage(pageNum) {
-            const container = document.getElementById('pdfPages');
+        // Left Menu Grid Builder
+        function renderMatrixDays(targetDay) {
+            const container = document.getElementById('matrix-days-list');
             container.innerHTML = '';
+            const dayConfig = curriculum[targetDay];
 
-            if (!readingState.pdfDoc) return;
+            dayConfig.topics.forEach((topic, idx) => {
+                const row = document.createElement('button');
+                const isCurrentActiveIndex = (targetDay === todayDayName && idx === activeTopicIndex);
+                
+                row.className = `w-full text-left p-3 rounded-xl border transition-all flex justify-between items-center group cursor-pointer ${
+                    isCurrentActiveIndex 
+                    ? 'bg-slate-800 border-emerald-500 text-white font-medium shadow-md' 
+                    : 'bg-slate-950/40 border-slate-900 text-slate-400 hover:bg-slate-900/50 hover:border-slate-800 hover:text-slate-200'
+                }`;
 
-            try {
-                const page = await readingState.pdfDoc.getPage(pageNum);
-                const viewport = page.getViewport({ scale: 1.5 });
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                canvas.style.width = '100%';
-                canvas.style.height = 'auto';
-                canvas.style.maxWidth = '500px';
+                // Append special indicator icon if it is a Tuesday tool track
+                const subtext = dayConfig.tools ? dayConfig.tools[idx].toUpperCase() : `Operational Block ${String(idx + 1).padStart(2, '0')}`;
 
-                await page.render({ canvasContext: context, viewport: viewport }).promise;
-                container.appendChild(canvas);
+                row.innerHTML = `
+                    <div class="flex flex-col gap-0.5 max-w-[85%]">
+                        <span class="text-[9px] font-mono tracking-wider uppercase opacity-60 text-slate-400">${subtext}</span>
+                        <span class="text-xs truncate ${isCurrentActiveIndex ? 'text-emerald-400' : 'text-slate-300 group-hover:text-white'}">${topic.split(': ').pop()}</span>
+                    </div>
+                    <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800/80 group-hover:border-slate-700">View</span>
+                `;
 
-                document.getElementById('pageInput').value = pageNum;
-
-                const book = getBook(readingState.bookId);
-                if (book) {
-                    book.currentPage = pageNum;
-                    saveData();
-                    updateAll();
-                }
-
-            } catch (e) {
-                console.warn('Render page error', e);
-                container.innerHTML = `<div style="color:rgba(255,255,255,0.5);padding:40px;text-align:center;">Error rendering page ${pageNum}</div>`;
-            }
-        }
-
-        function nextPage() {
-            if (!readingState.pdfDoc) return;
-            const next = readingState.currentPage + 1;
-            if (next <= readingState.totalPages) {
-                readingState.currentPage = next;
-                renderPdfPage(next);
-                const book = getBook(readingState.bookId);
-                if (book) {
-                    book.lastRead = new Date().toISOString();
-                    saveData();
-                }
-            }
-        }
-
-        function prevPage() {
-            if (readingState.currentPage > 1) {
-                readingState.currentPage--;
-                renderPdfPage(readingState.currentPage);
-                const book = getBook(readingState.bookId);
-                if (book) {
-                    book.lastRead = new Date().toISOString();
-                    saveData();
-                }
-            }
-        }
-
-        document.getElementById('pageInput').addEventListener('change', function() {
-            let val = parseInt(this.value);
-            if (isNaN(val) || val < 1) val = 1;
-            if (readingState.pdfDoc && val > readingState.totalPages) val = readingState.totalPages;
-            if (val !== readingState.currentPage) {
-                readingState.currentPage = val;
-                renderPdfPage(val);
-                const book = getBook(readingState.bookId);
-                if (book) {
-                    book.currentPage = val;
-                    book.lastRead = new Date().toISOString();
-                    saveData();
-                }
-            }
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (!document.getElementById('readingOverlay').classList.contains('open')) return;
-            if (e.key === 'ArrowRight' || e.key === ' ') {
-                e.preventDefault();
-                nextPage();
-            } else if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                prevPage();
-            } else if (e.key === 'Escape') {
-                closeReading();
-            }
-        });
-
-        // ================================================================
-        //  READING TIMER
-        // ================================================================
-        function startReadingTimer() {
-            if (readingState.isReading) return;
-            readingState.isReading = true;
-            readingState.isPaused = false;
-            document.getElementById('timerIcon').className = 'fas fa-pause';
-
-            if (readingState.timerInterval) clearInterval(readingState.timerInterval);
-
-            readingState.timerInterval = setInterval(() => {
-                if (!readingState.isPaused) {
-                    readingState.seconds++;
-                    updateTimerDisplay();
-
-                    if (readingState.seconds % 10 === 0) {
-                        const book = getBook(readingState.bookId);
-                        if (book) {
-                            book.readingTime = (book.readingTime || 0) + 0.166;
-                            if (readingState.seconds % 60 === 0) {
-                                addReadingTime(1);
-                            }
-                            saveData();
-                            updateAll();
-                        }
-                    }
-                }
-            }, 1000);
-        }
-
-        function toggleReadingTimer() {
-            if (!readingState.isReading) {
-                startReadingTimer();
-                return;
-            }
-            readingState.isPaused = !readingState.isPaused;
-            document.getElementById('timerIcon').className = readingState.isPaused ? 'fas fa-play' : 'fas fa-pause';
-        }
-
-        function updateTimerDisplay() {
-            const mins = Math.floor(readingState.seconds / 60);
-            const secs = readingState.seconds % 60;
-            document.getElementById('readingTimeDisplay').textContent =
-                String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
-        }
-
-        function saveReadingProgress() {
-            if (!readingState.bookId) return;
-            const book = getBook(readingState.bookId);
-            if (book) {
-                book.currentPage = readingState.currentPage;
-                book.lastRead = new Date().toISOString();
-                if (readingState.seconds > 0) {
-                    const extraMin = readingState.seconds / 60;
-                    book.readingTime = (book.readingTime || 0) + extraMin;
-                    saveData();
-                }
-                saveData();
-            }
-            if (readingState.timerInterval) {
-                clearInterval(readingState.timerInterval);
-                readingState.timerInterval = null;
-            }
-            readingState.isReading = false;
-        }
-
-        function closeReading() {
-            saveReadingProgress();
-            if (readingState.bookId) {
-                const book = getBook(readingState.bookId);
-                if (book) {
-                    book.lastRead = new Date().toISOString();
-                    saveData();
-                }
-            }
-            document.getElementById('readingOverlay').classList.remove('open');
-            document.getElementById('pdfPages').innerHTML = '';
-            readingState.bookId = null;
-            readingState.pdfDoc = null;
-            updateAll();
-        }
-
-        // ================================================================
-        //  NAVIGATION
-        // ================================================================
-        document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const tabId = this.dataset.tab;
-                document.querySelectorAll('.bottom-nav .nav-item').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
-                document.getElementById(tabId).classList.add('active');
-                document.getElementById('mainContent').scrollTop = 0;
-                if (tabId === 'tabEdit') renderEditList();
-                if (tabId === 'tabAdd') renderAddList();
-                if (tabId === 'tabHome') renderHome();
+                row.onclick = () => loadWorkspace(targetDay, idx);
+                container.appendChild(row);
             });
-        });
-
-        // ================================================================
-        //  INIT
-        // ================================================================
-        function init() {
-            loadData();
-            startNotificationScheduler();
-            checkDailyGoal();
-
-            setInterval(() => {
-                renderStats();
-                checkDailyGoal();
-            }, 60000);
-
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden && readingState.bookId) {
-                    saveReadingProgress();
-                }
-                if (!document.hidden) {
-                    updateAll();
-                }
-            });
-
-            window.addEventListener('beforeunload', () => {
-                if (readingState.bookId) {
-                    saveReadingProgress();
-                }
-            });
-
-            console.log('📚 Farid Library initialized (ArrayBuffer + IndexedDB, fixed detached buffer)');
         }
 
-        document.addEventListener('DOMContentLoaded', init);
+        // Action Plan Logic Content Injector
+        function generateExecutionPoints(dayType, title, toolName) {
+            if (dayType === "Sunday") {
+                return `
+                    <li class="flex gap-2.5 items-start"><span class="text-emerald-400 font-mono text-xs mt-0.5">[01]</span> <p class="text-slate-300">Run an interface update on your custom web footprint, optimizing portfolio data rows.</p></li>
+                    <li class="flex gap-2.5 items-start"><span class="text-emerald-400 font-mono text-xs mt-0.5">[02]</span> <p class="text-slate-300">Draft a high-leverage LinkedIn text asset deconstructing an industrial or software corporate case study.</p></li>
+                    <li class="flex gap-2.5 items-start"><span class="text-emerald-400 font-mono text-xs mt-0.5">[03]</span> <p class="text-slate-300">Execute personalized networking signals to 3-5 high-altitude managers to forge operational connections.</p></li>
+                `;
+            }
 
-        if (typeof window.pdfjsLib !== 'undefined') {
-            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            if (dayType === "Tuesday") {
+                const toolPlans = {
+                    "Miro": [
+                        "Initialize a blank infinite Miro canvas and map out the system boundaries of your product portfolio.",
+                        "Use color-coded connection lines in Miro to visualize user emotion states linking directly to feature nodes.",
+                        "Export your completed Miro ecosystem strategy chart to share as a clean visual reference template for your team."
+                    ],
+                    "Figma": [
+                        "Open your application's UI design assets inside Figma and run a visual spacing alignment check.",
+                        "Wire dynamic clickable prototyping interactions in Figma to trace paths and capture structural UX flaws.",
+                        "Isolate and redesign elements in your Figma file that cause unnecessary user cognitive load."
+                    ],
+                    "Jira": [
+                        "Log into your Jira project dashboard, review task backlog priorities, and scrub outdated product descriptions.",
+                        "Create clean user stories inside a Jira active sprint view, assigning strict timeline tracking parameters.",
+                        "Analyze developer task cycle metrics in Jira to uncover and eliminate operational engineering blocks."
+                    ],
+                    "Notion": [
+                        "Open your central enterprise wiki page in Notion and update standard technical operational guidelines.",
+                        "Configure database relation properties inside Notion to connect abstract corporate goals directly to daily execution metrics.",
+                        "Format a highly structured product requirement document template inside Notion for fast developer onboarding."
+                    ],
+                    "Google Analytics": [
+                        "Audit your tracking code instrumentation tags inside the Google Analytics 4 admin panel interface.",
+                        "Build custom user step funnel reports in Google Analytics to visually calculate specific retention loss zones.",
+                        "Compare different user entry acquisition vectors inside Google Analytics to identify high-value software traffic routes."
+                    ]
+                };
+                return (toolPlans[toolName] || toolPlans["Miro"]).map((txt, i) => `
+                    <li class="flex gap-2.5 items-start">
+                        <span class="text-cyan-400 font-mono text-xs mt-0.5">[0${i+1}]</span>
+                        <p class="text-slate-300">${txt}</p>
+                    </li>
+                `).join('');
+            }
+
+            const templates = {
+                Monday: ["Practice verbal pacing mechanics aloud in front of a recording loop for 10 minutes straight.", "Map communication weak-points in active cross-functional leadership projects.", "Simulate high-stakes boardroom objections and formulate logic gate responses."],
+                Wednesday: ["Draft an enterprise strategy architecture graph showing horizontal integration pathways.", "Run a strategic SWOT/TOWS matching simulation against an early-stage software target asset.", "Analyze how central shared services operations can reduce engineering resource duplication costs."],
+                Thursday: ["Isolate pride triggers from data metrics workflows to secure objective strategic reasoning.", "Apply explicit Stoic boundaries or Zavia wisdom concepts to active workplace challenges.", "Execute a 30-minute unbroken strategic focus block with zero digital noise or notifications."],
+                Friday: ["Deconstruct your product's onboarding path and isolate its exact primary friction points.", "Analyze your user retention curves to find exactly where habit loops degrade.", "Map your platform's current variable reward mechanisms against the complete Hook framework."],
+                Saturday: ["Apply this framework to a live enterprise case study under a strict 20-minute timer.", "Construct a clean MECE issue tree to isolate and diagnose an ongoing operational bottleneck.", "Calculate explicit RICE prioritization parameters across your software backlog items."]
+            };
+            return (templates[dayType] || templates["Thursday"]).map((txt, i) => `
+                <li class="flex gap-2.5 items-start">
+                    <span class="text-emerald-400 font-mono text-xs mt-0.5">[0${i+1}]</span>
+                    <p class="text-slate-300">${txt.replace('this framework', `the <b>${title}</b> framework`)}</p>
+                </li>
+            `).join('');
         }
+
+        // Workspace Sync Frame Engine
+        function loadWorkspace(day, index) {
+            const config = curriculum[day];
+            const title = config.topics[index];
+            const desc = config.descriptions[index];
+
+            const badge = document.getElementById('active-badge');
+            const titleEl = document.getElementById('active-task-title');
+            const descEl = document.getElementById('active-task-desc');
+            const indexEl = document.getElementById('active-index-label');
+            const planEl = document.getElementById('execution-plan-points');
+            const dateTag = document.getElementById('active-date-tag');
+            const toolSection = document.getElementById('tool-breakdown-section');
+            const toolBadge = document.getElementById('tool-badge-display');
+
+            badge.textContent = config.title;
+            badge.className = `text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md ${config.color}`;
+            indexEl.textContent = `CRIC-BLOCK // ${String(index + 1).padStart(2, '0')}`;
+            titleEl.textContent = title;
+            descEl.innerHTML = desc;
+            dateTag.textContent = `${day.toUpperCase()} SELECTION`;
+            
+            let selectedToolName = "";
+            if (day === "Tuesday" && config.tools) {
+                selectedToolName = config.tools[index];
+                toolSection.classList.remove('hidden');
+                toolBadge.textContent = selectedToolName.toUpperCase();
+            } else {
+                toolSection.classList.add('hidden');
+            }
+
+            planEl.innerHTML = generateExecutionPoints(day, title, selectedToolName);
+        }
+
+        // Start App Framework Logic
+        function initApp() {
+            const activeTodayConfig = curriculum[todayDayName];
+            document.getElementById('today-title-display').textContent = activeTodayConfig.topics[activeTopicIndex];
+            document.getElementById('today-day-display').textContent = `${todayDayName} • Block ${String(activeTopicIndex + 1).padStart(2, '0')}`;
+            document.getElementById('today-desc-display').textContent = activeTodayConfig.descriptions[activeTopicIndex];
+
+            renderMatrixDays(todayDayName);
+            loadWorkspace(todayDayName, activeTopicIndex);
+        }
+
+        initApp();
     </script>
 </body>
 </html>
